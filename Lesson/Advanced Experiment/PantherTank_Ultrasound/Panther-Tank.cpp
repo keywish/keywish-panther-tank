@@ -6,7 +6,7 @@
 
 // For single motor drive
 // Tank::Tank(ProtocolParser *Package, uint8_t Servo_Pin = TA_SERVO_PIN, uint8_t bin1 = TA_BIN1_PIN, uint8_t bin2 = TA_BIN2_PIN, uint8_t pwmb = TA_PWMB_PIN, uint8_t standby = TA_STANBY_PIN):SmartCar("Tank", E_AURORA_RACING, 0x01, E_BLUTOOTH_CONTROL)
-Tank::Tank(ProtocolParser *Package,  uint8_t bin1, uint8_t bin2, uint8_t pwmb, uint8_t standby): SmartCar("Tank", E_AURORA_RACING, 0x01, E_BLUTOOTH_CONTROL)
+Tank::Tank(ProtocolParser *Package,  uint8_t bin1, uint8_t bin2, uint8_t pwmb, uint8_t standby): SmartCar("Tank", E_AURORA_RACING, 0x01, E_BLUETOOTH_CONTROL)
 {
   this->Bin1Pin = bin1;
   this->Bin2Pin = bin2;
@@ -18,7 +18,7 @@ Tank::Tank(ProtocolParser *Package,  uint8_t bin1, uint8_t bin2, uint8_t pwmb, u
 
 // For dual motor drive
 //Tank::Tank(ProtocolParser *Package, uint8_t ain1 = TA_AIN1_PIN, uint8_t ain2 = TA_AIN2_PIN, uint8_t pwma = TA_PWMA_PIN, uint8_t bin1 = TA_BIN1_PIN, uint8_t bin2 = TA_BIN2_PIN, uint8_t pwmb = TA_PWMB_PIN, uint8_t standby = TA_STANBY_PIN):SmartCar("Tank", E_AURORA_RACING, 0x01, E_BLUTOOTH_CONTROL)
-Tank::Tank(ProtocolParser *Package, uint8_t ain1, uint8_t ain2, uint8_t pwma, uint8_t bin1, uint8_t bin2, uint8_t pwmb, uint8_t standby): SmartCar("Tank", E_AURORA_RACING, 0x01, E_BLUTOOTH_CONTROL)
+Tank::Tank(ProtocolParser *Package, uint8_t ain1, uint8_t ain2, uint8_t pwma, uint8_t bin1, uint8_t bin2, uint8_t pwmb, uint8_t standby): SmartCar("Tank", E_AURORA_RACING, 0x01, E_BLUETOOTH_CONTROL)
 {
   this->Ain1Pin = ain1;
   this->Ain2Pin = ain2;
@@ -108,9 +108,9 @@ void Tank::TurnLeft(void)
   digitalWrite(Ain1Pin, HIGH);
   digitalWrite(Ain2Pin, LOW);
   analogWrite(PwmaPin, value);
-  digitalWrite(Bin1Pin, HIGH);
-  digitalWrite(Bin2Pin, LOW);
-  analogWrite(PwmbPin, 0);
+  digitalWrite(Bin1Pin, LOW);
+  digitalWrite(Bin2Pin, HIGH);
+  analogWrite(PwmbPin, value);
   digitalWrite(StandbyPin, HIGH);
   SetStatus(E_LEFT);
 }
@@ -119,9 +119,9 @@ void Tank::TurnRight(void)
 {
   int value = (Speed / 10) * 25;   //app contol hbot_speed is 0 ~ 100 ,pwm is 0~255
   DEBUG_LOG(DEBUG_LEVEL_INFO, "TurnRight\n");
-  digitalWrite(Ain1Pin, HIGH);
-  digitalWrite(Ain2Pin, LOW);
-  analogWrite(PwmaPin, 0);
+  digitalWrite(Ain1Pin, LOW);
+  digitalWrite(Ain2Pin, HIGH);
+  analogWrite(PwmaPin, value);
   digitalWrite(Bin1Pin, HIGH);
   digitalWrite(Bin2Pin, LOW);
   analogWrite(PwmbPin, value);
@@ -184,6 +184,7 @@ void Tank::Drive(int degree)
     digitalWrite(Bin2Pin, HIGH);
     analogWrite(PwmbPin, value);
     digitalWrite(StandbyPin, HIGH);
+    SetStatus(E_LEFT);
   }
   else if (degree > 185 && degree <= 260) {
     f = (float)(degree - 180) / 79;
@@ -328,6 +329,18 @@ int Tank::ResetPs2xPin(void)
     DEBUG_LOG(DEBUG_LEVEL_INFO, "Found Controller, configured successful\n");
   }
   return error;
+}
+
+void Tank::SendUltrasonicData(){
+    unsigned int UlFrontDistance =  mUltrasonic->GetUltrasonicFrontDistance();
+    SendData.start_code = 0xAA;
+    SendData.type = 0x01;
+    SendData.addr = 0x01;
+    SendData.function = E_ULTRASONIC_AVOIDANCE;
+    SendData.data = (byte *)&UlFrontDistance;
+    SendData.len = 7;
+    SendData.end_code = 0x55;
+    mProtocolPackage->SendPackage(&SendData, 1);
 }
 
 float Tank::PianoSing(byte b[])

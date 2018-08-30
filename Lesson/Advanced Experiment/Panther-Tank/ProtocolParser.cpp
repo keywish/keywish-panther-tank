@@ -26,8 +26,8 @@ ProtocolParser::~ProtocolParser()
 
 bool ProtocolParser::ParserPackage(char *data = NULL)
 {
-    if (recflag) {
-        recflag = false;
+    if (m_recv_flag) {
+        m_recv_flag = false;
         if( data != NULL) {
             m_pHeader = data;
         } else {
@@ -88,7 +88,7 @@ bool ProtocolParser::RecevData(void)
                 *m_pHeader = dat;
                 m_RecvDataIndex++;
                 m_PackageLength = m_RecvDataIndex + 1;
-                recflag = true;
+                m_recv_flag = true;
                 DEBUG_LOG(DEBUG_LEVEL_INFO, "RecevData end \n");
                 return true;
            } else {
@@ -106,7 +106,7 @@ bool ProtocolParser::RecevData(void)
                         preRecvLen = 0;
                         m_pHeader = buffer;
                         avilable = false;
-                        recflag = false;
+                        m_recv_flag = false;
                         Serial.println("preRecvLen\n");
                         return false;
                 }
@@ -119,7 +119,7 @@ bool ProtocolParser::RecevData(void)
                     preRecvLen = 0;
                     m_pHeader = buffer;
                     avilable = false;
-                    recflag = false;
+                    m_recv_flag = false;
                     return false;
                  }
             }

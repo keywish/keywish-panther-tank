@@ -32,6 +32,7 @@
 #include "debug.h"
 #define AIN1_PIN 3
 #define AIN2_PIN 11
+#define PWMA_PIN 5
 #define BIN1_PIN 4
 #define BIN2_PIN 2
 #define PWMB_PIN 6
@@ -46,7 +47,6 @@
 ProtocolParser *mProtocol = new ProtocolParser();
 Tank mTank(mProtocol, TA_AIN1_PIN, TA_AIN2_PIN, TA_PWMA_PIN, BIN1_PIN, BIN2_PIN, PWMB_PIN, STANBY_PIN);
 byte Ps2xStatus, Ps2xType;
-ST_PROTOCOL SendData;
 
 void setup() {
   Serial.begin(9600);
@@ -55,8 +55,8 @@ void setup() {
   mTank.SetBuzzerPin(BUZZER_PIN);
   mTank.SetRgbPin(RGB_PIN);
   mTank.Sing(S_connection);
-  mTank.SetSpeed(100);
-  delay(1000);  //added delay to give wireless ps2 module some time to startup, before configuring it
+  mTank.SetSpeed(0);
+  delay(1000);  
   Ps2xStatus = mTank.SetPs2xPin(PS2X_CLK, PS2X_CMD, PS2X_CS, PS2X_DAT);
   Ps2xType = mTank.mPs2x->readType();
 }
@@ -71,10 +71,10 @@ void HandlePs2xRemote()
       mTank.GoForward();
     }
     if (mTank.mPs2x->Button(PSB_PAD_RIGHT)) {
-      mTank.TurnRight();
+      mTank.Drive(30);
     }
     if (mTank.mPs2x->Button(PSB_PAD_LEFT)) {
-      mTank.TurnLeft();
+      mTank.Drive(150);
     }
     if (mTank.mPs2x->Button(PSB_PAD_DOWN)) {
       mTank.GoBack();
@@ -88,10 +88,10 @@ void HandlePs2xRemote()
       mTank.SpeedUp(5);
     }
     if (mTank.mPs2x->Button(PSB_CIRCLE)) {
-      mTank.Drive(0);
+      mTank.TurnRight();
     }
     if (mTank.mPs2x->Button(PSB_SQUARE)) {
-      mTank.Drive(180);
+      mTank.TurnLeft();
     }
     if (mTank.mPs2x->Button(PSB_L1) || mTank.mPs2x->Button(PSB_R1)) {
       PSS_X = mTank.mPs2x->Analog(PSS_LY);
@@ -108,10 +108,17 @@ void HandlePs2xRemote()
     mTank.KeepStop();
   }
   delay(50);
-  }
+}
 
 void loop() {
   mProtocol->RecevData();
+  if (mTank.GetControlMode() !=  E_BLUETOOTH_CONTROL &&  mTank.GetControlMode() != E_PIANO_MODE) {
+    if (mProtocol->ParserPackage()) {
+        if (mProtocol->GetRobotControlFun() == E_CONTROL_MODE) {
+          mTank.SetControlMode(mProtocol->GetControlMode());
+       }
+    }
+  }
   switch (mTank.GetControlMode()) {
     case E_PS2_REMOTE_CONTROL:
       while (Ps2xStatus != 0) { //skip loop if no controller found

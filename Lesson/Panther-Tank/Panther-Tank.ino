@@ -30,6 +30,9 @@
 #include "KeyMap.h"
 #include "Sounds.h"
 #include "debug.h"
+#define AIN1_PIN 3
+#define AIN2_PIN 11
+#define PWMA_PIN 5
 #define BIN1_PIN 4
 #define BIN2_PIN 2
 #define PWMB_PIN 6
@@ -44,14 +47,10 @@
 #define PS2X_CS  A2
 #define PS2X_DAT A0
 #define IR_PIN 8
-#define UL_LIMIT_MIN 50
-#define UL_LIMIT_MID 40
-#define UL_LIMIT_MAX 2000
 
 ProtocolParser *mProtocol = new ProtocolParser();
 Tank mTank(mProtocol, TA_AIN1_PIN, TA_AIN2_PIN, TA_PWMA_PIN, BIN1_PIN, BIN2_PIN, PWMB_PIN, STANBY_PIN);
 byte Ps2xStatus, Ps2xType;
-ST_PROTOCOL SendData;
 
 void setup() {
   Serial.begin(9600);
@@ -62,19 +61,17 @@ void setup() {
   mTank.Sing(S_connection);
   mTank.SetSpeed(100);
   mTank.SetUltrasonicPin(TRIG_PIN, ECHO_PIN, SERVO_PIN);
-  mTank.mUltrasonic->SetServoBaseDegree(88);
+  mTank.mUltrasonic->SetServoBaseDegree(86);
   mTank.mUltrasonic->SetServoDegree(90);
   delay(500);
   mTank.SetIrPin(IR_PIN);
-  //Infrared Tracing pins conflig with Ps2x pins
-  //mTank.SetInfraredTracingPin(TA_INFRARED_TRACING_PIN1, TA_INFRARED_TRACING_PIN2, TA_INFRARED_TRACING_PIN3);
   //delay(1000);  //added delay to give wireless ps2 module some time to startup, before configuring it
   //Ps2xStatus = mTank.SetPs2xPin(PS2X_CLK, PS2X_CMD, PS2X_CS, PS2X_DAT);
   //Ps2xType = mTank.mPs2x->readType();
 }
 
 void HandleBloothRemote()
-  {
+{
   if (mProtocol->ParserPackage()) {
     switch (mProtocol->GetRobotControlFun()) {
       case E_INFO:
@@ -87,6 +84,8 @@ void HandleBloothRemote()
         mTank.SetSpeed(mProtocol->GetRobotSpeed());
         break ;
       case E_CONTROL_MODE:
+        //Serial.println("set mode 2");
+        //Serial.println(mProtocol->GetControlMode());
         mTank.SetControlMode(mProtocol->GetControlMode());
         break;
       case E_BUZZER:
@@ -99,15 +98,15 @@ void HandleBloothRemote()
    }
   }
 
-  void HandleInfaredRemote(byte irKeyCode)
-  {
+void HandleInfaredRemote(byte irKeyCode)
+{
   switch ((E_IR_KEYCODE)mTank.mIrRecv->getIrKey(irKeyCode)) {
     case IR_KEYCODE_STAR:
       mTank.SpeedUp(10);
-      DEBUG_LOG(DEBUG_LEVEL_INFO, "mTank.Speed = %d \n", mTank.Speed);
+      DEBUG_LOG(DEBUG_LEVEL_INFO, "Speed+ = %d \n", mTank.Speed);
       break;
     case IR_KEYCODE_POUND:
-      DEBUG_LOG(DEBUG_LEVEL_INFO, " start Degree = %d \n", mTank.Degree);
+      DEBUG_LOG(DEBUG_LEVEL_INFO, "Speed- = %d \n", mTank.Speed);
       mTank.SpeedDown(10);
       break;
     case IR_KEYCODE_UP:
@@ -120,10 +119,10 @@ void HandleBloothRemote()
       mTank.KeepStop();
       break;
     case IR_KEYCODE_LEFT:
-      mTank.TurnLeft();
+      mTank.Drive(180);
       break;
     case IR_KEYCODE_RIGHT:
-      mTank.TurnRight();
+      mTank.Drive(0);
       break;
     default:
       break;
@@ -131,30 +130,8 @@ void HandleBloothRemote()
   //  mTank.mIrRecv->resume();
   }
 
-  void HandleInfraredTracing(void)
-  {
-  switch (mTank.mInfraredTracing->getValue()) {
-    case IT_ALL_BLACK:
-    case IT_ALL_WHITE:
-      mTank.KeepStop();
-      break;
-    case IT_CENTER:
-      mTank.SetSpeed(100);
-      mTank.GoForward();
-      break;
-    case IT_RIGHT1:
-      mTank.SetSpeed(80);
-      mTank.TurnRight();
-      break;
-    case IT_LEFT1:
-      mTank.SetSpeed(80);
-      mTank.TurnLeft();
-      break;
-  }
-  }
-
-  void HandlePs2xRemote()
-  {
+void HandlePs2xRemote()
+{
   static int vibrate = 0;
   byte PSS_X = 0, PSS_Y = 0;
   mTank.mPs2x->read_gamepad(false, vibrate); // read controller and set large motor to spin at 'vibrate' speed
@@ -163,10 +140,10 @@ void HandleBloothRemote()
       mTank.GoForward();
     }
     if (mTank.mPs2x->Button(PSB_PAD_RIGHT)) {
-      mTank.TurnRight();
+      mTank.Drive(30);
     }
     if (mTank.mPs2x->Button(PSB_PAD_LEFT)) {
-      mTank.TurnLeft();
+      mTank.Drive(150);
     }
     if (mTank.mPs2x->Button(PSB_PAD_DOWN)) {
       mTank.GoBack();
@@ -180,10 +157,10 @@ void HandleBloothRemote()
       mTank.SpeedUp(5);
     }
     if (mTank.mPs2x->Button(PSB_CIRCLE)) {
-      mTank.Drive(0);
+      mTank.TurnRight();
     }
     if (mTank.mPs2x->Button(PSB_SQUARE)) {
-      mTank.Drive(180);
+      mTank.TurnLeft();
     }
     if (mTank.mPs2x->Button(PSB_L1) || mTank.mPs2x->Button(PSB_R1)) {
       PSS_X = mTank.mPs2x->Analog(PSS_LY);
@@ -200,73 +177,50 @@ void HandleBloothRemote()
     mTank.KeepStop();
   }
   delay(50);
-  }
+}
 
 void HandleUltrasonicAvoidance()
 {
     uint16_t UlFrontDistance,UlLeftDistance,UlRightDistance;
     UlFrontDistance =  mTank.mUltrasonic->GetUltrasonicFrontDistance();
-    if ((UlFrontDistance > UL_LIMIT_MID) && (UlFrontDistance < UL_LIMIT_MAX))
+    DEBUG_LOG(DEBUG_LEVEL_INFO, "UlFrontDistance = %d \n", UlFrontDistance);
+    if (UlFrontDistance < UL_LIMIT_MIN)
     {
-        mTank.SetSpeed(100);
-        mTank.GoForward();
+        mTank.SetSpeed(80);
+        mTank.GoBack();
+        delay(200);
     }
-    else if ((UlFrontDistance < UL_LIMIT_MIN) || (UlFrontDistance > UL_LIMIT_MAX))
+    if(UlFrontDistance < UL_LIMIT_MID)
     {
         mTank.KeepStop();
+        delay(100);
         UlRightDistance = mTank.mUltrasonic->GetUltrasonicRightDistance();
         UlLeftDistance = mTank.mUltrasonic->GetUltrasonicLeftDistance();
-        if((UlRightDistance > UL_LIMIT_MIN) && (UlRightDistance < UL_LIMIT_MAX) && (UlRightDistance > UlLeftDistance))
-        {
-            mTank.SetSpeed(80);
+        if((UlRightDistance > UL_LIMIT_MIN) && (UlRightDistance < UL_LIMIT_MAX)){
+            mTank.SetSpeed(100);
             mTank.TurnRight();
-            delay(200);
-        }
-        else if((UlLeftDistance > UL_LIMIT_MIN) && (UlLeftDistance < UL_LIMIT_MAX) && (UlLeftDistance > UlRightDistance))
-        {
-            mTank.SetSpeed(80);
+            delay(400);
+        } else if((UlLeftDistance > UL_LIMIT_MIN) && (UlLeftDistance < UL_LIMIT_MAX)){
+            mTank.SetSpeed(100);
             mTank.TurnLeft();
-            delay(200);
+            delay(400);
+        } else if((UlRightDistance < UL_LIMIT_MIN) && (UlLeftDistance < UL_LIMIT_MIN) ){
+            mTank.SetSpeed(400);
+             mTank.TurnLeft();
+            delay(800);
         }
-        else if((UlRightDistance < UL_LIMIT_MIN) && (UlLeftDistance < UL_LIMIT_MIN) )
-        {
-            mTank.SetSpeed(80);
-            mTank.Drive(0);
-            delay(200);
-        }
-    }
-}
-
-void SendTracingSignal(){
-    byte TracingSignal = mTank.mInfraredTracing->getValue();
-    SendData.start_code = 0xAA;
-    SendData.type = 0x01;
-    SendData.addr = 0x01;
-    SendData.function = E_INFRARED_TRACKING;
-    SendData.data = (byte *)&TracingSignal;
-    SendData.len = 7;
-    SendData.end_code = 0x55;
-    mProtocol->SendPackage(&SendData, 1);
-}
-
-void SendUltrasonicData(){
-    unsigned int UlFrontDistance =  mTank.mUltrasonic->GetUltrasonicFrontDistance();
-    SendData.start_code = 0xAA;
-    SendData.type = 0x01;
-    SendData.addr = 0x01;
-    SendData.function = E_ULTRASONIC_AVOIDANCE;
-    SendData.data = (byte *)&UlFrontDistance;
-    SendData.len = 7;
-    SendData.end_code = 0x55;
-    mProtocol->SendPackage(&SendData, 1);
+    } else{
+          mTank.SetSpeed(80);
+          mTank.GoForward();
+      }
 }
 
 void loop() {
   mProtocol->RecevData();
-  if (mTank.GetControlMode() !=  E_BLUETOOTH_CONTROL) {
+  if (mTank.GetControlMode() !=  E_BLUETOOTH_CONTROL &&  mTank.GetControlMode() != E_PIANO_MODE) {
     if (mProtocol->ParserPackage()) {
         if (mProtocol->GetRobotControlFun() == E_CONTROL_MODE) {
-        mTank.SetControlMode(mProtocol->GetControlMode());
+          mTank.SetControlMode(mProtocol->GetControlMode());
        }
     }
   }
@@ -287,13 +241,7 @@ void loop() {
         }
       }
       break;
-    case E_INFRARED_TRACKING_MODE:
-      // DEBUG_LOG(DEBUG_LEVEL_INFO, "E_INFRARED_TRACKING \n");
-      mTank.SetInfraredTracingPin(TA_INFRARED_TRACING_PIN1, TA_INFRARED_TRACING_PIN2, TA_INFRARED_TRACING_PIN3);
-      HandleInfraredTracing();
-      break;
     case E_PS2_REMOTE_CONTROL:
-
       while (Ps2xStatus != 0) { //skip loop if no controller found
         delay(500);
         Ps2xStatus = mTank.ResetPs2xPin();
@@ -305,9 +253,19 @@ void loop() {
         HandlePs2xRemote();
       }
       break;
+    case E_PIANO_MODE:
+            if (mProtocol->ParserPackage()) {
+                if (mProtocol->GetRobotControlFun() == E_BUZZER) {
+                    mTank.PianoSing(mProtocol->GetPianoSing());
+                } else if (mProtocol->GetRobotControlFun() == E_CONTROL_MODE) {
+                    mTank.SetControlMode(mProtocol->GetControlMode());
+                }
+            }
+            break;
     case E_ULTRASONIC_AVOIDANCE:
+      mTank.mUltrasonic->init();
       HandleUltrasonicAvoidance();
-      SendUltrasonicData();
+      mTank.SendUltrasonicData();
       break;
     default:
       break;

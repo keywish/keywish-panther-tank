@@ -54,7 +54,7 @@ private :
     uint8_t Ps2xClkPin, Ps2xCmdPin, Ps2xAttPin, Ps2xDatPin;    // for Ps2 remoter
     uint8_t ServoBaseDegree; //correct degree for stop
     uint8_t EchoPin,TrigPin,ServoPin;
-
+    ST_PROTOCOL SendData;
     ProtocolParser *mProtocolPackage;
 
 public :
@@ -84,6 +84,7 @@ public :
     void LightOff(E_RGB_INDEX index = E_RGB_ALL);
     void SetBuzzerPin(uint8_t pin = TA_BUZZER_PIN);
     void Sing(byte songName);
+    void SendUltrasonicData();
     float PianoSing(byte b[]);
     void SetInfraredTracingPin(uint8_t Pin1 = TA_INFRARED_TRACING_PIN1, uint8_t Pin2 = TA_INFRARED_TRACING_PIN2, uint8_t Pin3 = TA_INFRARED_TRACING_PIN3);
     int SetPs2xPin(uint8_t clk = TA_PS2X_CLK, uint8_t cmd = TA_PS2X_CMD, uint8_t att = TA_PS2X_CS, uint8_t dat = TA_PS2X_DAT);

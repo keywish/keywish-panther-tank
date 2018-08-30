@@ -31,7 +31,8 @@
 #include "Sounds.h"
 #include "debug.h"
 #define AIN1_PIN 3
-#define AIN3_PIN 11
+#define AIN2_PIN 11
+#define PWMA_PIN 5
 #define BIN1_PIN 4
 #define BIN2_PIN 2
 #define PWMB_PIN 6
@@ -42,7 +43,6 @@
 
 ProtocolParser *mProtocol = new ProtocolParser();
 Tank mTank(mProtocol, TA_AIN1_PIN, TA_AIN2_PIN, TA_PWMA_PIN, BIN1_PIN, BIN2_PIN, PWMB_PIN, STANBY_PIN);
-ST_PROTOCOL SendData;
 
 void setup() {
   Serial.begin(9600);
@@ -51,19 +51,19 @@ void setup() {
   mTank.SetBuzzerPin(BUZZER_PIN);
   mTank.SetRgbPin(RGB_PIN);
   mTank.Sing(S_connection);
-  mTank.SetSpeed(100);
-  delay(500);
+  mTank.SetSpeed(0);
   mTank.SetIrPin(IR_PIN);
 }
+
 void HandleInfaredRemote(byte irKeyCode)
 {
   switch ((E_IR_KEYCODE)mTank.mIrRecv->getIrKey(irKeyCode)) {
     case IR_KEYCODE_STAR:
       mTank.SpeedUp(10);
-      DEBUG_LOG(DEBUG_LEVEL_INFO, "mTank.Speed = %d \n", mTank.Speed);
+      DEBUG_LOG(DEBUG_LEVEL_INFO, "Speed+ = %d \n", mTank.Speed);
       break;
     case IR_KEYCODE_POUND:
-      DEBUG_LOG(DEBUG_LEVEL_INFO, " start Degree = %d \n", mTank.Degree);
+      DEBUG_LOG(DEBUG_LEVEL_INFO, "Speed- = %d \n", mTank.Speed);
       mTank.SpeedDown(10);
       break;
     case IR_KEYCODE_UP:
@@ -76,10 +76,10 @@ void HandleInfaredRemote(byte irKeyCode)
       mTank.KeepStop();
       break;
     case IR_KEYCODE_LEFT:
-      mTank.TurnLeft();
+      mTank.Drive(180);
       break;
     case IR_KEYCODE_RIGHT:
-      mTank.TurnRight();
+      mTank.Drive(0);
       break;
     default:
       break;
@@ -89,6 +89,13 @@ void HandleInfaredRemote(byte irKeyCode)
 
 void loop() {
   mProtocol->RecevData();
+  if (mTank.GetControlMode() !=  E_BLUETOOTH_CONTROL &&  mTank.GetControlMode() != E_PIANO_MODE) {
+    if (mProtocol->ParserPackage()) {
+        if (mProtocol->GetRobotControlFun() == E_CONTROL_MODE) {
+          mTank.SetControlMode(mProtocol->GetControlMode());
+       }
+    }
+  }
   switch (mTank.GetControlMode()) {
     case E_INFRARED_REMOTE_CONTROL:
       byte irKeyCode;

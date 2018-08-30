@@ -30,6 +30,7 @@
 #include "KeyMap.h"
 #include "Sounds.h"
 #include "debug.h"
+#define IR_PIN 8
 #define AIN1_PIN 3
 #define AIN2_PIN 11
 #define BIN1_PIN 4
@@ -41,13 +42,9 @@
 #define ECHO_PIN A0
 #define TRIG_PIN A1
 #define SERVO_PIN 13
-#define UL_LIMIT_MIN 50
-#define UL_LIMIT_MID 40
-#define UL_LIMIT_MAX 2000
 
 ProtocolParser *mProtocol = new ProtocolParser();
 Tank mTank(mProtocol, TA_AIN1_PIN, TA_AIN2_PIN, TA_PWMA_PIN, BIN1_PIN, BIN2_PIN, PWMB_PIN, STANBY_PIN);
-ST_PROTOCOL SendData;
 
 void setup() {
   Serial.begin(9600);
@@ -58,7 +55,7 @@ void setup() {
   mTank.Sing(S_connection);
   mTank.SetSpeed(100);
   mTank.SetUltrasonicPin(TRIG_PIN, ECHO_PIN, SERVO_PIN);
-  mTank.mUltrasonic->SetServoBaseDegree(88);
+  mTank.mUltrasonic->SetServoBaseDegree(86);
   mTank.mUltrasonic->SetServoDegree(90);
   delay(500);
 }
@@ -67,43 +64,44 @@ void HandleUltrasonicAvoidance()
 {
     uint16_t UlFrontDistance,UlLeftDistance,UlRightDistance;
     UlFrontDistance =  mTank.mUltrasonic->GetUltrasonicFrontDistance();
-    if ((UlFrontDistance > UL_LIMIT_MID) && (UlFrontDistance < UL_LIMIT_MAX))
+    DEBUG_LOG(DEBUG_LEVEL_INFO, "UlFrontDistance = %d \n", UlFrontDistance);
+    if (UlFrontDistance < UL_LIMIT_MIN)
     {
-        mTank.SetSpeed(100);
-        mTank.GoForward();
+        mTank.SetSpeed(80);
+        mTank.GoBack();
+        delay(200);
     }
-    else if ((UlFrontDistance < UL_LIMIT_MIN) || (UlFrontDistance > UL_LIMIT_MAX))
+    if(UlFrontDistance < UL_LIMIT_MID)
     {
         mTank.KeepStop();
+        delay(100);
         UlRightDistance = mTank.mUltrasonic->GetUltrasonicRightDistance();
         UlLeftDistance = mTank.mUltrasonic->GetUltrasonicLeftDistance();
-        if((UlRightDistance > UL_LIMIT_MIN) && (UlRightDistance < UL_LIMIT_MAX) && (UlRightDistance > UlLeftDistance))
-        {
-            mTank.SetSpeed(80);
+        if((UlRightDistance > UL_LIMIT_MIN) && (UlRightDistance < UL_LIMIT_MAX)){
+            mTank.SetSpeed(100);
             mTank.TurnRight();
-            delay(200);
-        }
-        else if((UlLeftDistance > UL_LIMIT_MIN) && (UlLeftDistance < UL_LIMIT_MAX) && (UlLeftDistance > UlRightDistance))
-        {
-            mTank.SetSpeed(80);
+            delay(400);
+        } else if((UlLeftDistance > UL_LIMIT_MIN) && (UlLeftDistance < UL_LIMIT_MAX)){
+            mTank.SetSpeed(100);
             mTank.TurnLeft();
-            delay(200);
+            delay(400);
+        } else if((UlRightDistance < UL_LIMIT_MIN) && (UlLeftDistance < UL_LIMIT_MIN) ){
+            mTank.SetSpeed(400);
+             mTank.TurnLeft();
+            delay(800);
         }
-        else if((UlRightDistance < UL_LIMIT_MIN) && (UlLeftDistance < UL_LIMIT_MIN) )
-        {
-            mTank.SetSpeed(80);
-            mTank.Drive(0);
-            delay(200);
-        }
-    }
+    } else{
+          mTank.SetSpeed(80);
+          mTank.GoForward();
+      }
 }
 
 void loop() {
   mProtocol->RecevData();
-  if (mTank.GetControlMode() !=  E_BLUTOOTH_CONTROL) {
+  if (mTank.GetControlMode() !=  E_BLUETOOTH_CONTROL &&  mTank.GetControlMode() != E_PIANO_MODE) {
     if (mProtocol->ParserPackage()) {
         if (mProtocol->GetRobotControlFun() == E_CONTROL_MODE) {
-        mTank.SetControlMode(mProtocol->GetControlMode());
+          mTank.SetControlMode(mProtocol->GetControlMode());
        }
     }
   }
