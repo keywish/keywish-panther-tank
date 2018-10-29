@@ -261,6 +261,13 @@ void Tank::LightOff(E_RGB_INDEX index = E_RGB_ALL)
   mRgb->show();
 }
 
+void Tank::SetRgbLight(long Color = RGB_WHITE)
+{
+    mRgb->setColor(0, Color);
+    DEBUG_LOG(DEBUG_LEVEL_INFO, "Color： %d\n", Color);
+    mRgb->show();
+}
+
 void Tank::SetInfraredTracingPin(uint8_t Pin1 = TA_INFRARED_TRACING_PIN1, uint8_t Pin2 = TA_INFRARED_TRACING_PIN2, uint8_t Pin3 = TA_INFRARED_TRACING_PIN3)
 {
   static bool InfraredTracingInit = false;

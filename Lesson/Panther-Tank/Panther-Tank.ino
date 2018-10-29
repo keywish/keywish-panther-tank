@@ -30,9 +30,6 @@
 #include "KeyMap.h"
 #include "Sounds.h"
 #include "debug.h"
-#define AIN1_PIN 3
-#define AIN2_PIN 11
-#define PWMA_PIN 5
 #define BIN1_PIN 4
 #define BIN2_PIN 2
 #define PWMB_PIN 6
@@ -48,6 +45,7 @@
 #define PS2X_DAT A0
 #define IR_PIN 8
 
+
 ProtocolParser *mProtocol = new ProtocolParser();
 Tank mTank(mProtocol, TA_AIN1_PIN, TA_AIN2_PIN, TA_PWMA_PIN, BIN1_PIN, BIN2_PIN, PWMB_PIN, STANBY_PIN);
 byte Ps2xStatus, Ps2xType;
@@ -59,15 +57,8 @@ void setup() {
   mTank.SetBuzzerPin(BUZZER_PIN);
   mTank.SetRgbPin(RGB_PIN);
   mTank.Sing(S_connection);
-  mTank.SetSpeed(100);
-  mTank.SetUltrasonicPin(TRIG_PIN, ECHO_PIN, SERVO_PIN);
-  mTank.mUltrasonic->SetServoBaseDegree(86);
-  mTank.mUltrasonic->SetServoDegree(90);
-  delay(500);
+  mTank.SetSpeed(0);
   mTank.SetIrPin(IR_PIN);
-  //delay(1000);  //added delay to give wireless ps2 module some time to startup, before configuring it
-  //Ps2xStatus = mTank.SetPs2xPin(PS2X_CLK, PS2X_CMD, PS2X_CS, PS2X_DAT);
-  //Ps2xType = mTank.mPs2x->readType();
 }
 
 void HandleBloothRemote()
@@ -92,8 +83,12 @@ void HandleBloothRemote()
         // mTank.Sing();
         // mTank.PianoSing(mProtocol->GetPianoSing());
         break;
+      case E_LED:
+        mTank.SetRgbLight(mProtocol->GetRgbValue());
+        break;
       case E_VERSION:
         break;
+
     }
    }
   }
@@ -129,6 +124,28 @@ void HandleInfaredRemote(byte irKeyCode)
   }
   //  mTank.mIrRecv->resume();
   }
+
+void HandleInfraredTracing(void)
+{
+  switch (mTank.mInfraredTracing->getValue()) {
+    case IT_ALL_BLACK:
+    case IT_ALL_WHITE:
+      mTank.KeepStop();
+      break;
+    case IT_CENTER:
+      mTank.SetSpeed(100);
+      mTank.GoForward();
+      break;
+    case IT_RIGHT1:
+      mTank.SetSpeed(80);
+      mTank.TurnRight();
+      break;
+    case IT_LEFT1:
+      mTank.SetSpeed(80);
+      mTank.TurnLeft();
+      break;
+  }
+}
 
 void HandlePs2xRemote()
 {
@@ -216,6 +233,7 @@ void HandleUltrasonicAvoidance()
 }
 
 void loop() {
+  static byte mode;
   mProtocol->RecevData();
   if (mTank.GetControlMode() !=  E_BLUETOOTH_CONTROL &&  mTank.GetControlMode() != E_PIANO_MODE) {
     if (mProtocol->ParserPackage()) {
@@ -241,7 +259,18 @@ void loop() {
         }
       }
       break;
+    case E_INFRARED_TRACKING_MODE:
+      // DEBUG_LOG(DEBUG_LEVEL_INFO, "E_INFRARED_TRACKING \n");
+      mTank.SetInfraredTracingPin(TA_INFRARED_TRACING_PIN1, TA_INFRARED_TRACING_PIN2, TA_INFRARED_TRACING_PIN3);
+      HandleInfraredTracing();
+      break;
     case E_PS2_REMOTE_CONTROL:
+      if(mode != E_PS2_REMOTE_CONTROL) {
+          Ps2xStatus = mTank.SetPs2xPin(PS2X_CLK, PS2X_CMD, PS2X_CS, PS2X_DAT);
+          Ps2xType = mTank.mPs2x->readType();
+          delay(500);
+          mode = E_PS2_REMOTE_CONTROL;
+        }
       while (Ps2xStatus != 0) { //skip loop if no controller found
         delay(500);
         Ps2xStatus = mTank.ResetPs2xPin();
@@ -254,15 +283,21 @@ void loop() {
       }
       break;
     case E_PIANO_MODE:
-            if (mProtocol->ParserPackage()) {
-                if (mProtocol->GetRobotControlFun() == E_BUZZER) {
-                    mTank.PianoSing(mProtocol->GetPianoSing());
-                } else if (mProtocol->GetRobotControlFun() == E_CONTROL_MODE) {
-                    mTank.SetControlMode(mProtocol->GetControlMode());
-                }
+        if (mProtocol->ParserPackage()) {
+            if (mProtocol->GetRobotControlFun() == E_BUZZER) {
+                mTank.PianoSing(mProtocol->GetPianoSing());
+            } else if (mProtocol->GetRobotControlFun() == E_CONTROL_MODE) {
+                mTank.SetControlMode(mProtocol->GetControlMode());
             }
-            break;
+        }
+        break;
     case E_ULTRASONIC_AVOIDANCE:
+      if(mode != E_ULTRASONIC_AVOIDANCE) {
+        mTank.SetUltrasonicPin(TRIG_PIN, ECHO_PIN, SERVO_PIN);
+        mTank.mUltrasonic->SetServoBaseDegree(86);
+        mTank.mUltrasonic->SetServoDegree(90);
+        mode = E_ULTRASONIC_AVOIDANCE;
+        }
       mTank.mUltrasonic->init();
       HandleUltrasonicAvoidance();
       mTank.SendUltrasonicData();

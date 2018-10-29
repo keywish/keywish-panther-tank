@@ -20,6 +20,7 @@ public:
     int GetRobotSpeed();
     int GetRobotDegree();
     int GetPianoSing();
+    long GetRgbValue();
     bool SendPackage(ST_PROTOCOL *send_dat,int len);
     byte GetControlMode();
 

@@ -207,6 +207,16 @@ int ProtocolParser::GetPianoSing()
     }
 }
 
+long ProtocolParser::GetRgbValue(void)
+{
+    if (recv->function == E_LED) {
+        long value = ((long)(*(recv->data+2))<< 16 | (long)(*(recv->data+1))<< 8 | (long)(*(recv->data)));
+        return value;
+    } else {
+        return 0;
+    }
+}
+
 uint8_t ProtocolParser::GetProtocolDataLength()
 {
     return protocol_data_len;
