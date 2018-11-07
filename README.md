@@ -7,6 +7,15 @@ The latest information download address: https://github.com/keywish/keywish-pant
 # Panther-tank
 ![](https://github.com/keywish/keywish-panther-tank/blob/master/Panther-tank.jpg)
 
+# Product Introduce
+"Tank" is ATMEGA328P-PU as the main control chip, and TB6612FGN is used as a multi-functional
+crawler car for motor drive chip. Compared with the traditional car, "Tank" is also equipped with wireless
+control (Bluetooth, infrared remote control). It can automatically avoid obstacles. Of course, Maker can also
+add or subtract other functions through its own Idea, such as adding automatic tracking, PS2 gamepad,
+adding wifi control, robotic arm, etc.
+"Tank" is equipped with all kinds of materials, technical manuals, routines, etc., and teaches you from
+entry to proficiency. Every electronic enthusiast can easily get started and realize the functions they want.
+
 # Feature
 
 * Keywish Panther-Tank is a multi-functional Tank Robot that supports Multiple working modes,such as:Ultrasonic obstacle avoidance,Music performance£¬IR-remote control,App control via bluetooth,Gravity sensing control,optional PS2 wireless remote control(PS2 2.4G Wireless) </br>
