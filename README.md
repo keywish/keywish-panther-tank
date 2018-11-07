@@ -6,7 +6,8 @@ The latest information download address: https://github.com/keywish/keywish-pant
 
 # Panther-tank
 ![](https://github.com/keywish/keywish-panther-tank/blob/master/Panther-tank.jpg)
-
+# Component List
+![](https://github.com/keywish/keywish-panther-tank/blob/master/Component%20list.png)
 # Product Introduce
 "Tank" is ATMEGA328P-PU as the main control chip, and TB6612FGN is used as a multi-functional
 crawler car for motor drive chip. Compared with the traditional car, "Tank" is also equipped with wireless
@@ -18,13 +19,17 @@ entry to proficiency. Every electronic enthusiast can easily get started and rea
 
 # Feature
 
-* Keywish Panther-Tank is a multi-functional Tank Robot that supports Multiple working modes,such as:Ultrasonic obstacle avoidance,Music performance£¬IR-remote control,App control via bluetooth,Gravity sensing control,optional PS2 wireless remote control(PS2 2.4G Wireless) </br>
-* Panther-Tank uses high quality self-designed motor drive board with Bluetooth 4.0 module, a buzzer, two RGB lights, infrared receiver, two DC motor interfaces, reserved PS2 and other sensor interfaces, all interfaces are perfectly fit in PH2.0mm or pin headers </br>
-* Equipped with TB6612FNG motor drive chip and two 33G-520 DC geared motors;Built-in 7.4V 2000mA large capacity lithium battery, Support powerful and long-endurance playing time with lithium battery charger </br>
-* Panther-Tank Kit comes with a CD,Including detailed sample code with comments, circuit graph, assembly instruction,test progrm for each module and a powerful application which connect all moudles' functions. Even if you have no programming experience, you can follow the step-by-step instruction and gradually become a master </br>
+*	High power all metal geared motor</br>
+*	Integral stamping molding kit,easier Installation,tighter</br>
+*	2400mAH,7.4v ,rechargeable li-battery,longer battery life,and more dynamic</br>
+*	2 RGB turn lights</br>
+*	Buzzer Turn around reminder</br>
+*	Infrared remote control</br>
+*	Android App control</br>
+
 
 # Required Best Buy Links
-[Buy on Amazon](https://www.amazon.com/Keywish-Panther-Tank-Ultrasonic-Bluetooth-Educational/dp/B07GBM6N4K/ref=lp_16058461011_1_11?srs=16058461011&ie=UTF8&qid=1535612545&sr=8-11) </br>
+[Buy on Amazon]( https://www.amazon.com/dp/B07CFX53W4 ) </br>
 [Buy on Aliexpress]( https://www.aliexpress.com/store/product/Tank-Robot-for-Arduino-UNO-R3-Smart-Cars-Super-Starter-Kit-APP-RC-Gravity-Sensing-Remote/3269016_32919990916.html)
 
 # Video Links
