@@ -3,7 +3,6 @@
 Technical support email: abbott@emakefun.com </br>
 Sales email: cici@keywish-robot.com </br>
 The latest information download address: https://github.com/keywish/keywish-panther-tank
-![](https://github.com/keywish/keywish-panther-tank/raw/master/Panther-tank.jpg)
 
 # Panther-tank
 ![](https://github.com/keywish/keywish-panther-tank/blob/master/Panther-tank.jpg)
