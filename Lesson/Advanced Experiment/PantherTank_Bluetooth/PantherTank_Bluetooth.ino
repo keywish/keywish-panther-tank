@@ -30,25 +30,21 @@
 #include "KeyMap.h"
 #include "Sounds.h"
 #include "debug.h"
-#define AIN1_PIN 3
-#define AIN2_PIN 11
-#define PWMA_PIN 5
-#define BIN1_PIN 4
-#define BIN2_PIN 2
-#define PWMB_PIN 6
-#define STANBY_PIN 7
-#define BUZZER_PIN 9
-#define RGB_PIN A3
 
 ProtocolParser *mProtocol = new ProtocolParser();
-Tank mTank(mProtocol, TA_AIN1_PIN, TA_AIN2_PIN, TA_PWMA_PIN, BIN1_PIN, BIN2_PIN, PWMB_PIN, STANBY_PIN);
+#if (EM_MOTOR_SHIELD_BOARD_VERSION < 3)
+Tank mTank(mProtocol, TA_AIN1_PIN, TA_AIN2_PIN, TA_PWMA_PIN, TA_BIN1_PIN, TA_BIN2_PIN, TA_PWMB_PIN, TA_STANBY_PIN);
+#else
+Tank mTank(mProtocol, TA_AIN1_PIN, TA_BIN1_PIN, TA_PWMA_PIN, TA_PWMB_PIN);
+#endif
+byte Ps2xStatus, Ps2xType;
 
 void setup() {
   Serial.begin(9600);
   mTank.init();
   mTank.SetControlMode(E_BLUETOOTH_CONTROL);
-  mTank.SetBuzzerPin(BUZZER_PIN);
-  mTank.SetRgbPin(RGB_PIN);
+  mTank.SetBuzzerPin(TA_BUZZER_PIN);
+  mTank.SetRgbPin(TA_RGB_PIN);
   mTank.Sing(S_connection);
   mTank.SetSpeed(0);
 }
@@ -67,6 +63,8 @@ void HandleBloothRemote()
         mTank.SetSpeed(mProtocol->GetRobotSpeed());
         break ;
       case E_CONTROL_MODE:
+        //Serial.println("set mode 2");
+        //Serial.println(mProtocol->GetControlMode());
         mTank.SetControlMode(mProtocol->GetControlMode());
         break;
       case E_BUZZER:
@@ -80,22 +78,9 @@ void HandleBloothRemote()
   }
 
 void loop() {
+  static byte mode;
   mProtocol->RecevData();
-  if (mTank.GetControlMode() !=  E_BLUETOOTH_CONTROL &&  mTank.GetControlMode() != E_PIANO_MODE) {
-    if (mProtocol->ParserPackage()) {
-        if (mProtocol->GetRobotControlFun() == E_CONTROL_MODE) {
-          mTank.SetControlMode(mProtocol->GetControlMode());
-       }
-    }
-  }
-  switch (mTank.GetControlMode()) {
-    case E_BLUETOOTH_CONTROL:
-      HandleBloothRemote();
-      // DEBUG_LOG(DEBUG_LEVEL_INFO, "E_BLUETOOTH_CONTROL \n");
-      break;
-    default:
-      break;
-  }
+  HandleBloothRemote();
   switch (mTank.GetStatus()) {
     case E_FORWARD:
       mTank.LightOn();

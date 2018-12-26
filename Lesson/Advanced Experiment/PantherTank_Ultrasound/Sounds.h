@@ -1,6 +1,27 @@
 #ifndef _SOUNDS_H_
 #define _SOUNDS_H_
 
+typedef enum {
+    E_NOTE,
+    E_SOUND,
+    E_MUSIC,
+    E_BUZZER_TYPE_MAX,
+}E_BUZZER_TYPE;
+
+typedef enum {
+    E_BEAT_8_1,
+    E_BEAT_4_1,
+    E_BEAT_2_1,
+    E_BEAT_1,
+    E_BEAT_2,
+    E_BEAT_4
+}E_MUSIC_BEAT;
+
+typedef struct {
+    uint16_t note;
+    E_MUSIC_BEAT beat;
+}ST_MUSIC_TYPE;
+
 //***********************************************************************************
 //*********************************SOUNDS DEFINES************************************
 //***********************************************************************************

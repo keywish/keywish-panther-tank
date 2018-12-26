@@ -18,9 +18,13 @@ typedef enum
     E_ULTRASONIC,
     E_INFRARED_REMOTE,
     E_INFRARED_AVOIDANCE,
-    E_CONTROL_MODE,  //12
+    E_CONTROL_MODE,
+    E_BUTTON,
+    E_LED_MAXTRIX,
+    E_CMD_LINE,
     E_VERSION,
     E_UPGRADE,
+    E_CONTOROL_CODE_MAX,
 } E_CONTOROL_FUNC;
 
 typedef enum
@@ -28,18 +32,15 @@ typedef enum
     E_SMARTCAR = 0,
     E_HUMMER_BOT,
     E_AURORA_RACING,
+    E_PANTHER_TANK,
+    E_BEETLE_BOT,
     E_BALANCE_CAR,
     E_OTTO,
-    E_EBOT,
     E_QUADCOPTER,
+    E_HELLO_BOT,
+    E_MIRAGE_TANK,
     E_TYPE_MAX,
 } E_TYPE;
-
-typedef struct
-{
-    unsigned short int degree;
-    byte speed;
-} ST_CONTROL_CODE;
 
 typedef struct
 {

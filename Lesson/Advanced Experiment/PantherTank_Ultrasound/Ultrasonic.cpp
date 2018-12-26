@@ -12,24 +12,25 @@ Ultrasonic::Ultrasonic(byte trig_pin, byte echo_pin, byte servo_pin)
     mForwardServo.attach(ServoPin);
 }
 
-Ultrasonic::init()
+void Ultrasonic::init()
 {
     pinMode(EchoPin, INPUT);
     pinMode(TrigPin, OUTPUT);
     pinMode(ServoPin, OUTPUT);
     mForwardServo.attach(ServoPin);
 }
-uint16_t Ultrasonic::GetUltrasonicFrontDistance()
+float Ultrasonic::GetUltrasonicFrontDistance(void)
 {
+    double Distance;
     do {
         digitalWrite(TrigPin, LOW);
         delayMicroseconds(2);
         digitalWrite(TrigPin, HIGH);
         delayMicroseconds(10);
         digitalWrite(TrigPin, LOW);
-        FrontDistance = pulseIn(EchoPin, HIGH) / 58.00;
-    } while (FrontDistance > UL_LIMIT_MAX);
-    return FrontDistance;
+        Distance = (pulseIn(EchoPin, HIGH) / 58.00);
+    } while (Distance > UL_LIMIT_MAX);
+    return Distance;
 }
 
 uint16_t Ultrasonic::GetUltrasonicLeftDistance()
@@ -50,12 +51,12 @@ uint16_t Ultrasonic::GetUltrasonicRightDistance()
     return RightDistance;
 }
 
-Ultrasonic::SetServoBaseDegree(uint8_t base)
+void Ultrasonic::SetServoBaseDegree(uint8_t base)
 {
     ServoBaseDegree = base;
 }
 
-Ultrasonic::SetServoDegree(int Angle)
+void Ultrasonic::SetServoDegree(int Angle)
 {
 	int servo_degree;
 	if (Angle > 180) {

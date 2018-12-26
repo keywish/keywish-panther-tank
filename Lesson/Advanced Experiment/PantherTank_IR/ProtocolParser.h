@@ -2,9 +2,11 @@
 #define   _PROTOCOLPARSER_H_
 #include "Arduino.h"
 #include "Protocol.h"
+#include "Sounds.h"
+#include "SmartCar.h"
 #include <stdint.h>
 
-#define BUFFER_SIZE 24
+#define BUFFER_SIZE 64
 
 class ProtocolParser
 {
@@ -14,15 +16,20 @@ public:
     bool RecevData(char *data, size_t len);
     bool RecevData(void);
     bool ParserPackage(char *data = NULL);
-    E_TYPE GetRobotType();
-    uint8_t GetRobotAddr();
-    E_CONTOROL_FUNC GetRobotControlFun();
-    int GetRobotSpeed();
-    int GetRobotDegree();
-    int GetPianoSing();
+    E_TYPE GetRobotType(void);
+    uint8_t GetRobotAddr(void);
+    E_CONTOROL_FUNC GetRobotControlFun(void);
+    int GetRobotSpeed(void);
+    int GetRobotDegree(void);
+    bool GetBluetoothButton(byte button);
+    E_BUZZER_TYPE GetBuzzerMode(void);
+    uint16_t GetBuzzerNote(void);
+    uint8_t GetBuzzerSound(void);
+    ST_MUSIC_TYPE GetBuzzerMusic(void);
+    long GetRgbValue(void);
     bool SendPackage(ST_PROTOCOL *send_dat,int len);
-    byte GetControlMode();
-
+    E_SMARTCAR_CONTROL_MODE GetControlMode(void);
+    uint8_t GetProtocolDataLength(void);
 private:
     byte buffer[BUFFER_SIZE];
     byte m_StartCode, m_EndCode;
@@ -34,9 +41,8 @@ private:
     uint16_t m_CheckSum;
     uint8_t m_RecvDataIndex;            // get recevie data index
     char GetHeader(size_t index);
-    uint8_t GetProtocolDataLength();
-    uint8_t GetPackageLength();
-    uint16_t GetCheckSum();             // get package check sum
+    uint8_t GetPackageLength(void);
+    uint16_t GetCheckSum(void);             // get package check sum
 };
 
 #endif // _PROTOCOLPARSER_H_

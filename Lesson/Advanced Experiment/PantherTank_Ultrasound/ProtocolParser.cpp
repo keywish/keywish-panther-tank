@@ -2,8 +2,13 @@
 #include "ProtocolParser.h"
 #define DEBUG_LEVEL DEBUG_LEVEL_ERR
 #include "debug.h"
+#include "SmartCar.h"
 
+#if ARDUINO > 10609
 ProtocolParser::ProtocolParser(byte startcode = PROTOCOL_START_CODE, byte endcode = PROTOCOL_END_CODE)
+#else
+ProtocolParser::ProtocolParser(byte startcode , byte endcode )
+#endif
 {
     m_recv_flag = false;
     m_send_success = false;
@@ -19,17 +24,22 @@ ProtocolParser::ProtocolParser(byte startcode = PROTOCOL_START_CODE, byte endcod
     }
 }
 
-ProtocolParser::~ProtocolParser()
+ProtocolParser::~ProtocolParser(void)
 {
     m_pHeader = NULL;
 }
 
+#if ARDUINO > 10609
 bool ProtocolParser::ParserPackage(char *data = NULL)
+#else
+bool ProtocolParser::ParserPackage(char *data )
+#endif
+
 {
     if (m_recv_flag) {
         m_recv_flag = false;
         if( data != NULL) {
-            m_pHeader = data;
+            m_pHeader = (byte*)data;
         } else {
             m_pHeader = buffer;
         }
@@ -89,6 +99,7 @@ bool ProtocolParser::RecevData(void)
                 m_RecvDataIndex++;
                 m_PackageLength = m_RecvDataIndex + 1;
                 m_recv_flag = true;
+                protocol_data_len = m_PackageLength - 8;
                 DEBUG_LOG(DEBUG_LEVEL_INFO, "RecevData end \n");
                 return true;
            } else {
@@ -165,22 +176,22 @@ bool ProtocolParser::RecevData(char *data, size_t len)
 }
 
 
-E_TYPE ProtocolParser::GetRobotType()
+E_TYPE ProtocolParser::GetRobotType(void)
 {
     return (E_TYPE)recv->type;
 }
 
-uint8_t ProtocolParser::GetRobotAddr()
+uint8_t ProtocolParser::GetRobotAddr(void)
 {
     return recv->addr;
 }
 
-E_CONTOROL_FUNC ProtocolParser::GetRobotControlFun()
+E_CONTOROL_FUNC ProtocolParser::GetRobotControlFun(void)
 {
     return (E_CONTOROL_FUNC)recv->function;
 }
 
-int ProtocolParser::GetRobotSpeed()
+int ProtocolParser::GetRobotSpeed(void)
 {
     if (recv->function == E_ROBOT_CONTROL_SPEED ) {
         return (int)(*(recv->data));
@@ -189,7 +200,7 @@ int ProtocolParser::GetRobotSpeed()
     }
 }
 
-int ProtocolParser::GetRobotDegree()
+int ProtocolParser::GetRobotDegree(void)
 {
     if (recv->function == E_ROBOT_CONTROL_DIRECTION ) {
         return ((int)(*(recv->data)<< 8) | (int)(*(recv->data+1)));
@@ -198,31 +209,102 @@ int ProtocolParser::GetRobotDegree()
     }
 }
 
-int ProtocolParser::GetPianoSing()
+E_BUZZER_TYPE ProtocolParser::GetBuzzerMode(void)
 {
     if (recv->function == E_BUZZER) {
-        return (recv->data);
+        return (E_BUZZER_TYPE)(*(recv->data));
+    } else {
+        return E_BUZZER_TYPE_MAX;
+    }
+}
+
+uint16_t ProtocolParser::GetBuzzerNote(void)
+{
+    uint16_t note;
+    if (recv->function == E_BUZZER) {
+        note = (*(recv->data + 1) << 8) | (*(recv->data + 2));
+        return note;
+    }
+}
+
+uint8_t ProtocolParser::GetBuzzerSound(void)
+{
+    if (recv->function == E_BUZZER) {
+        return *(recv->data + 1) << 8;
+    }
+}
+
+ST_MUSIC_TYPE ProtocolParser::GetBuzzerMusic(void)
+{
+    ST_MUSIC_TYPE music;
+    if (recv->function == E_BUZZER) {
+        music.note = (*(recv->data + 1) << 8) |(*(recv->data + 2));
+        music.beat = (E_MUSIC_BEAT)*(recv->data + 3);
+    }
+    return music;
+}
+
+// up 0 down 1 left 2 right 3 speeddown 4 speedup 5
+bool ProtocolParser::GetBluetoothButton(byte button) {
+    int dat = 0xFF;
+	static int pre_speed = 0;
+    if (button < 4) {
+        if (recv->function == E_ROBOT_CONTROL_DIRECTION) {
+            dat = (int)(*(recv->data)<< 8) | (int)(*(recv->data+1));
+            if ((dat == 0 || dat == 360 ) && button == 3) {
+                return true;
+            } else if (dat == 90 && button == 0) {
+                return true;
+            } else if (dat == 180 && button == 2) {
+                return true;
+            } else if (dat == 270  && button == 1) {
+                return true;
+            }
+        }
+    } else if (button >3 && button <= 5) {
+        if (recv->function == E_ROBOT_CONTROL_SPEED) {
+            dat = (int)(*(recv->data));
+            if ((dat < pre_speed) && button == 4) {
+                    pre_speed = dat;
+                    return true;
+                } else if (dat > pre_speed && button == 5) {
+                    pre_speed = dat;
+                    return true;
+            }
+        }
+    }
+    return false;
+}
+
+long ProtocolParser::GetRgbValue(void)
+{
+    if (recv->function == E_LED) {
+        long value = ((long)(*(recv->data+2))<< 16 | (long)(*(recv->data+1))<< 8 | (long)(*(recv->data)));
+        return value;
     } else {
         return 0;
     }
 }
 
-uint8_t ProtocolParser::GetProtocolDataLength()
+uint8_t ProtocolParser::GetProtocolDataLength(void)
 {
     return protocol_data_len;
 }
 
-uint8_t ProtocolParser::GetPackageLength()
+uint8_t ProtocolParser::GetPackageLength(void)
 {
     return m_PackageLength;
 }
 
-byte ProtocolParser::GetControlMode()
+ E_SMARTCAR_CONTROL_MODE ProtocolParser::GetControlMode(void)
 {
-    if (((E_CONTOROL_FUNC)recv->function) == E_CONTROL_MODE) {
-        return (byte)(*(recv->data));
-    } else {
-        return 0;
+    if (((E_CONTOROL_FUNC)recv->function) == E_CONTROL_MODE) 
+    {
+        return (E_SMARTCAR_CONTROL_MODE)(*(recv->data));
+    } 
+    else 
+    {
+        return (E_SMARTCAR_CONTROL_MODE)0;
     }
 }
 
@@ -248,7 +330,7 @@ bool ProtocolParser::SendPackage(ST_PROTOCOL *send_dat,int len)
     buffer[4] = send_dat->function;
     checksum = buffer[1] + buffer[2] + buffer[3] + buffer[4];
 
-  //  Serial.println(*send_dat->data);
+   // Serial.println(*send_dat->data);
    // Serial.println(*(send_dat->data + 1 ));
     for(int i = 0; i < len; i++) {
        *(p_data+i) = *(send_dat->data + i);
@@ -259,7 +341,7 @@ bool ProtocolParser::SendPackage(ST_PROTOCOL *send_dat,int len)
     *(p_data + len + 1) = checksum & 0xFF;
     *(p_data + len + 2) = send_dat->end_code;
 
-    Serial.write(buffer,len+8);
+    Serial.write(buffer, len+8);
     Serial.flush();
     delay(100);
     return true;

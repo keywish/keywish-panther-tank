@@ -46,7 +46,6 @@
 #include <stdint.h>
 #include <stdbool.h>
 #include <Arduino.h>
-#include "MeConfig.h"
 
 #ifdef ME_PORT_DEFINED
 #include "MePort.h"
@@ -57,7 +56,13 @@
  * \par Description
  * Declaration of Class Buzzer.
  */
+
+ #ifdef ME_PORT_DEFINED
 class Buzzer : public MePort
+#else
+class Buzzer
+#endif
+
 {
 public:
 #ifdef ME_PORT_DEFINED

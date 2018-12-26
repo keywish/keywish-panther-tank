@@ -26,7 +26,14 @@
  * [Diagram]
 
  */
-#include "Servo.h" 
+#include "Servo_test.h"
+#define EM_MOTOR_SHIELD_BOARD_VERSION 3
+
+#if (EM_MOTOR_SHIELD_BOARD_VERSION > 2)
+    #define SERVO_PIN 7
+#else
+    #define SERVO_PIN 5
+#endif
 
 Servo myservo;  // Create a servo motor object
 
@@ -36,7 +43,7 @@ String temp = "";//Temporary character variables, or use it for the cache
 
 void setup()   
 {  
-    myservo.attach(13);    //Define the steering gear pin to 13
+    myservo.attach(SERVO_PIN);    //Define the steering gear pin to 13
     Serial.begin(9600);  //Set the baud rate
 }
 

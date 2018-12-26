@@ -22,12 +22,19 @@
  * or FITNESS FOR A PARTICULAR PURPOSE.
  *
  */
-#include "Servo.h"
+#include "Servo_test.h"
+#define EM_MOTOR_SHIELD_BOARD_VERSION 3
+
+#if (EM_MOTOR_SHIELD_BOARD_VERSION > 2)
+    #define SERVO_PIN 7
+#else
+    #define SERVO_PIN 5
+#endif
 Servo myservo;  // create servo object to control a servo
 int pos = 90;    // variable to store the servo position
 void setup()
 {
-    myservo.attach(13);  // attaches the servo on pin 13 to the servo object
+    myservo.attach(SERVO_PIN);  // attaches the servo on pin 13 to the servo object
     myservo.write(pos);    // tell servo to go to position in variable 'pos'
     Serial.println("Servo Correct success"); 
 }

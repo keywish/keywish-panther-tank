@@ -27,34 +27,24 @@
 */
 #include "Panther-Tank.h"
 #include "ProtocolParser.h"
-#include "KeyMap.h"
 #include "Sounds.h"
 #include "debug.h"
-#define IR_PIN 8
-#define AIN1_PIN 3
-#define AIN2_PIN 11
-#define BIN1_PIN 4
-#define BIN2_PIN 2
-#define PWMB_PIN 6
-#define STANBY_PIN 7
-#define BUZZER_PIN 9
-#define RGB_PIN A3
-#define ECHO_PIN A0
-#define TRIG_PIN A1
-#define SERVO_PIN 13
 
 ProtocolParser *mProtocol = new ProtocolParser();
-Tank mTank(mProtocol, TA_AIN1_PIN, TA_AIN2_PIN, TA_PWMA_PIN, BIN1_PIN, BIN2_PIN, PWMB_PIN, STANBY_PIN);
+#if (EM_MOTOR_SHIELD_BOARD_VERSION <= 2)
+Tank mTank(mProtocol, TA_AIN1_PIN, TA_AIN2_PIN, TA_PWMA_PIN, TA_BIN1_PIN, TA_BIN2_PIN, TA_PWMB_PIN, TA_STANBY_PIN);
+#else
+Tank mTank(mProtocol, TA_AIN1_PIN, TA_BIN1_PIN, TA_PWMA_PIN, TA_PWMB_PIN);
+#endif
 
 void setup() {
   Serial.begin(9600);
   mTank.init();
-  mTank.SetControlMode(E_ULTRASONIC_AVOIDANCE);
-  mTank.SetBuzzerPin(BUZZER_PIN);
-  mTank.SetRgbPin(RGB_PIN);
+  mTank.SetBuzzerPin(TA_BUZZER_PIN);
+  mTank.SetRgbPin(TA_RGB_PIN);
   mTank.Sing(S_connection);
-  mTank.SetSpeed(100);
-  mTank.SetUltrasonicPin(TRIG_PIN, ECHO_PIN, SERVO_PIN);
+  mTank.SetSpeed(0);
+  mTank.SetUltrasonicPin(TA_TRIG_PIN, TA_ECHO_PIN, TA_SERVO_PIN);
   mTank.mUltrasonic->SetServoBaseDegree(86);
   mTank.mUltrasonic->SetServoDegree(90);
   delay(500);
@@ -98,20 +88,7 @@ void HandleUltrasonicAvoidance()
 
 void loop() {
   mProtocol->RecevData();
-  if (mTank.GetControlMode() !=  E_BLUETOOTH_CONTROL &&  mTank.GetControlMode() != E_PIANO_MODE) {
-    if (mProtocol->ParserPackage()) {
-        if (mProtocol->GetRobotControlFun() == E_CONTROL_MODE) {
-          mTank.SetControlMode(mProtocol->GetControlMode());
-       }
-    }
-  }
-  switch (mTank.GetControlMode()) {
-    case E_ULTRASONIC_AVOIDANCE:
-      HandleUltrasonicAvoidance();
-      break;
-    default:
-      break;
-  }
+  HandleUltrasonicAvoidance();
   switch (mTank.GetStatus()) {
     case E_FORWARD:
       mTank.LightOn();
