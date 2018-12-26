@@ -82,6 +82,7 @@ public :
     void SetRgbPin(uint8_t pin = TA_RGB_PIN);
     void LightOn(E_RGB_INDEX index = E_RGB_ALL, long Color = RGB_WHITE);
     void LightOff(E_RGB_INDEX index = E_RGB_ALL);
+    void SetRgbLight(long Color = RGB_WHITE);
     void SetBuzzerPin(uint8_t pin = TA_BUZZER_PIN);
     void Sing(byte songName);
     void SendUltrasonicData();

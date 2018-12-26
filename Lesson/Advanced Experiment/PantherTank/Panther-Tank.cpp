@@ -218,21 +218,33 @@ void Tank::Drive(int degree)
   }
 }
 
+#if ARDUINO > 10609
 void Tank::SetIrPin(uint8_t pin = TA_IR_PIN)
+#else 
+void Tank::SetIrPin(uint8_t pin )
+#endif
 {
   IrPin = pin;
   mIrRecv = new IRremote (IrPin);
   mIrRecv->begin();  // Initialize the infrared receiver
 }
 
+#if ARDUINO > 10609
 void Tank::SetBuzzerPin(uint8_t pin = TA_BUZZER_PIN)
+#else 
+void Tank::SetBuzzerPin(uint8_t pin)
+#endif
 {
   BuzzerPin = pin;
   mBuzzer = new Buzzer();
   mBuzzer->setpin(BuzzerPin);
 }
 
+#if ARDUINO > 10609
 void Tank::SetRgbPin(uint8_t pin = TA_RGB_PIN)
+#else 
+void Tank::SetRgbPin(uint8_t pin )
+#endif
 {
   RgbPin = pin;
   mRgb = new RGBLed(7, RgbPin);
@@ -240,7 +252,11 @@ void Tank::SetRgbPin(uint8_t pin = TA_RGB_PIN)
   // mRgb->reset();
 }
 
+#if ARDUINO > 10609
 void Tank::LightOn(E_RGB_INDEX index = E_RGB_ALL, long Color = RGB_WHITE)
+#else 
+void Tank::LightOn(E_RGB_INDEX index , long Color )
+#endif
 {
   // mRgb->reset();
   if (index == E_RGB_ALL) {
@@ -250,7 +266,12 @@ void Tank::LightOn(E_RGB_INDEX index = E_RGB_ALL, long Color = RGB_WHITE)
   }
   mRgb->show();
 }
+
+#if ARDUINO > 10609
 void Tank::LightOff(E_RGB_INDEX index = E_RGB_ALL)
+#else 
+void Tank::LightOff(E_RGB_INDEX index)
+#endif
 {
   //  mRgb->reset();
   if (index == E_RGB_ALL) {
@@ -261,14 +282,22 @@ void Tank::LightOff(E_RGB_INDEX index = E_RGB_ALL)
   mRgb->show();
 }
 
+#if ARDUINO > 10609
 void Tank::SetRgbLight(long Color = RGB_WHITE)
+#else 
+void Tank::SetRgbLight(long Color)
+#endif
 {
     mRgb->setColor(0, Color);
     DEBUG_LOG(DEBUG_LEVEL_INFO, "Color： %d\n", Color);
     mRgb->show();
 }
 
+#if ARDUINO > 10609
 void Tank::SetInfraredTracingPin(uint8_t Pin1 = TA_INFRARED_TRACING_PIN1, uint8_t Pin2 = TA_INFRARED_TRACING_PIN2, uint8_t Pin3 = TA_INFRARED_TRACING_PIN3)
+#else 
+void Tank::SetInfraredTracingPin(uint8_t Pin1, uint8_t Pin2, uint8_t Pin3 )
+#endif
 {
   static bool InfraredTracingInit = false;
   if (!InfraredTracingInit) {
@@ -281,7 +310,11 @@ void Tank::SetInfraredTracingPin(uint8_t Pin1 = TA_INFRARED_TRACING_PIN1, uint8_
   }
 }
 
+#if ARDUINO > 10609
 void Tank::SetUltrasonicPin(uint8_t Trig_Pin = TA_TRIG_PIN, uint8_t Echo_Pin = TA_ECHO_PIN, uint8_t Sevo_Pin = TA_SERVO_PIN)
+#else 
+void Tank::SetUltrasonicPin(uint8_t Trig_Pin, uint8_t Echo_Pin , uint8_t Sevo_Pin )
+#endif
 {
     static bool UltrasonicInit = false;
     if (!UltrasonicInit) {
@@ -293,7 +326,11 @@ void Tank::SetUltrasonicPin(uint8_t Trig_Pin = TA_TRIG_PIN, uint8_t Echo_Pin = T
     }
 }
 
+#if ARDUINO > 10609
 int Tank::SetPs2xPin(uint8_t clk = TA_PS2X_CLK, uint8_t cmd = TA_PS2X_CMD, uint8_t att = TA_PS2X_CS, uint8_t dat = TA_PS2X_DAT)
+#else 
+int Tank::SetPs2xPin(uint8_t clk , uint8_t cmd , uint8_t att , uint8_t dat )
+#endif
 {
   static bool Ps2xInit = false;
   int error = 0 ;
@@ -338,10 +375,10 @@ int Tank::ResetPs2xPin(void)
   return error;
 }
 
-void Tank::SendUltrasonicData(){
+void Tank::SendUltrasonicData(void){
     unsigned int UlFrontDistance =  mUltrasonic->GetUltrasonicFrontDistance();
     SendData.start_code = 0xAA;
-    SendData.type = 0x01;
+    SendData.type = (E_TYPE)0x01;
     SendData.addr = 0x01;
     SendData.function = E_ULTRASONIC_AVOIDANCE;
     SendData.data = (byte *)&UlFrontDistance;
@@ -350,7 +387,11 @@ void Tank::SendUltrasonicData(){
     mProtocolPackage->SendPackage(&SendData, 1);
 }
 
+#if ARDUINO > 10609
 float Tank::PianoSing(byte b[])
+#else 
+float Tank::PianoSing(byte b[])
+#endif
 {
     union result
     {
@@ -482,7 +523,7 @@ void Tank::SendBatteryPackage(byte *battery_value)
 {
   ST_PROTOCOL send_dat;
   send_dat.start_code = PROTOCOL_START_CODE;
-  send_dat.type = 0x01;
+  send_dat.type =(E_TYPE) 0x01;
   send_dat.addr = 0x01;
   send_dat.function = E_BATTERY;
   send_dat.data = battery_value;

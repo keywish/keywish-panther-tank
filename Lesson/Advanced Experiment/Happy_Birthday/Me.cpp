@@ -1,4 +1,3 @@
-
 #include "MePort.h"
 
 /***********************Port*********************/
@@ -130,7 +129,7 @@ bool MePort::dRead2(uint8_t mode)
  * \par Function
  *   dpRead1
  * \par Description
- *   Read the digital input value on slot1 of current RJ25 object's port, the input 
+ *   Read the digital input value on slot1 of current RJ25 object's port, the input
  *   mode set as INPUT_PULLUP.
  * \par Output
  *   None
@@ -151,7 +150,7 @@ bool MePort::dpRead1(void)
  * \par Function
  *   dpRead2
  * \par Description
- *   Read the digital input value on slot2 of current RJ25 object's port, the input 
+ *   Read the digital input value on slot2 of current RJ25 object's port, the input
  *   mode set as INPUT_PULLUP.
  * \par Output
  *   None
@@ -403,4 +402,3 @@ uint8_t MePort::pin(uint8_t port, uint8_t slot)
 {
   return(slot == SLOT_1 ? mePort[port].s1 : mePort[port].s2);
 }
-

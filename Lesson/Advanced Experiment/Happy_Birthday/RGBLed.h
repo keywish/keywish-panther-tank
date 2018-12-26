@@ -10,6 +10,13 @@
 
 #define DEFAULT_MAX_LED_NUMBER  (32)
 
+#define RGB_RED     0xFF0000
+#define RGB_GREEN   0x00FF00
+#define RGB_BLUE    0x0000FF
+#define RGB_YELLOW  0xFFFF00
+#define RGB_PURPLE  0xFF00FF
+#define RGB_WHITE   0xFFFFFF
+
 /// @brief Class for RGB Led Module
 struct cRGB
 {
@@ -102,7 +109,7 @@ public:
 
 #ifdef ME_PORT_DEFINED
 /**
- * \par Function 
+ * \par Function
  *   reset
  * \par Description
  *   Reset the LED available data PIN by its RJ25 port, and slot2 will be used as default.

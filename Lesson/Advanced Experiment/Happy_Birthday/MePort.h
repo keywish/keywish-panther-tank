@@ -139,7 +139,7 @@ public:
  * \par Function
  *   dpRead1
  * \par Description
- *   Read the digital input value on slot1 of current RJ25 object's port, the input 
+ *   Read the digital input value on slot1 of current RJ25 object's port, the input
  *   mode set as INPUT_PULLUP.
  * \par Output
  *   None
@@ -154,7 +154,7 @@ public:
  * \par Function
  *   dpRead2
  * \par Description
- *   Read the digital input value on slot2 of current RJ25 object's port, the input 
+ *   Read the digital input value on slot2 of current RJ25 object's port, the input
  *   mode set as INPUT_PULLUP.
  * \par Output
  *   None

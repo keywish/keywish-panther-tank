@@ -417,7 +417,7 @@ bool RGBLed::setColor(uint8_t index, uint8_t red, uint8_t green, uint8_t blue)
  */
 bool RGBLed::setColor(uint8_t red, uint8_t green, uint8_t blue)
 {
-  return(setColor(0, red, green, blue) );;
+  return(setColor(0, red, green, blue));
 }
 
 /**
@@ -437,30 +437,15 @@ bool RGBLed::setColor(uint8_t red, uint8_t green, uint8_t blue)
  */
 bool RGBLed::setColor(uint8_t index, long value)
 {
+  uint8_t red    = (value & 0xff0000) >> 16;
+  uint8_t green  = (value & 0xff00) >> 8;
+  uint8_t blue   = value & 0xff;
+
   if(index == 0)
   {
-    for(int16_t i = 0; i < count_led; i++)
-    {
-      uint8_t tmp    = index * 3;
-      uint8_t red    = (value & 0xff0000) >> 16;
-      uint8_t green  = (value & 0xff00) >> 8;
-      uint8_t blue   = value & 0xff;
-      pixels[tmp]    = green;
-      pixels[tmp + 1] = red;
-      pixels[tmp + 2] = blue;
-    }
-    return(true);
-  }
-  else if(index < count_led)
-  {
-    uint8_t tmp    = (index - 1) * 3;
-    uint8_t red    = (value & 0xff0000) >> 16;
-    uint8_t green  = (value & 0xff00) >> 8;
-    uint8_t blue   = value & 0xff;
-    pixels[tmp]    = green;
-    pixels[tmp + 1] = red;
-    pixels[tmp + 2] = blue;
-    return(true);
+      return(setColor(0, red, green, blue));
+  } else if(index <= count_led) {
+      return(setColor(index, red, green, blue));
   }
   return(false);
 }
@@ -660,4 +645,3 @@ RGBLed::~RGBLed(void)
   free(pixels_bak);
   pixels_bak = NULL;
 }
-

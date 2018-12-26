@@ -3,7 +3,11 @@
 #define DEBUG_LEVEL DEBUG_LEVEL_ERR
 #include "debug.h"
 
+#if ARDUINO > 10609
 ProtocolParser::ProtocolParser(byte startcode = PROTOCOL_START_CODE, byte endcode = PROTOCOL_END_CODE)
+#else 
+ProtocolParser::ProtocolParser(byte startcode , byte endcode )
+#endif
 {
     m_recv_flag = false;
     m_send_success = false;
@@ -19,17 +23,21 @@ ProtocolParser::ProtocolParser(byte startcode = PROTOCOL_START_CODE, byte endcod
     }
 }
 
-ProtocolParser::~ProtocolParser()
+ProtocolParser::~ProtocolParser(void)
 {
     m_pHeader = NULL;
 }
 
+#if ARDUINO > 10609
 bool ProtocolParser::ParserPackage(char *data = NULL)
+#else 
+bool ProtocolParser::ParserPackage(char *data )
+#endif
 {
     if (m_recv_flag) {
         m_recv_flag = false;
         if( data != NULL) {
-            m_pHeader = data;
+            m_pHeader =(byte*) data;
         } else {
             m_pHeader = buffer;
         }
@@ -198,10 +206,20 @@ int ProtocolParser::GetRobotDegree()
     }
 }
 
-int ProtocolParser::GetPianoSing()
+byte* ProtocolParser::GetPianoSing()
 {
     if (recv->function == E_BUZZER) {
         return (recv->data);
+    } else {
+        return 0;
+    }
+}
+
+long ProtocolParser::GetRgbValue(void)
+{
+    if (recv->function == E_LED) {
+        long value = ((long)(*(recv->data+2))<< 16 | (long)(*(recv->data+1))<< 8 | (long)(*(recv->data)));
+        return value;
     } else {
         return 0;
     }
@@ -217,12 +235,12 @@ uint8_t ProtocolParser::GetPackageLength()
     return m_PackageLength;
 }
 
-byte ProtocolParser::GetControlMode()
+E_SMARTCAR_CONTROL_MODE ProtocolParser::GetControlMode()
 {
     if (((E_CONTOROL_FUNC)recv->function) == E_CONTROL_MODE) {
-        return (byte)(*(recv->data));
+        return (E_SMARTCAR_CONTROL_MODE)(*(recv->data));
     } else {
-        return 0;
+        return (E_SMARTCAR_CONTROL_MODE)0;
     }
 }
 

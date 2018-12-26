@@ -1,7 +1,11 @@
 #include "Ultrasonic.h"
 
 static uint16_t history = 0;
-Ultrasonic::Ultrasonic(byte trig_pin, byte echo_pin, byte servo_pin)
+#if ARDUINO > 10609
+Ultrasonic::Ultrasonic(byte trig_pin=TA_TRIG_PIN, byte echo_pin== TA_ECHO_PIN, byte servo_pin=TA_SERVO_PIN)
+#else 
+ Ultrasonic::Ultrasonic(byte trig_pin, byte echo_pin, byte servo_pin)
+#endif
 {
     TrigPin = trig_pin;
     EchoPin = echo_pin;
@@ -12,7 +16,7 @@ Ultrasonic::Ultrasonic(byte trig_pin, byte echo_pin, byte servo_pin)
     mForwardServo.attach(ServoPin);
 }
 
-Ultrasonic::init()
+ void Ultrasonic::init(void)
 {
     pinMode(EchoPin, INPUT);
     pinMode(TrigPin, OUTPUT);
@@ -50,12 +54,12 @@ uint16_t Ultrasonic::GetUltrasonicRightDistance()
     return RightDistance;
 }
 
-Ultrasonic::SetServoBaseDegree(uint8_t base)
+void Ultrasonic::SetServoBaseDegree(uint8_t base)
 {
     ServoBaseDegree = base;
 }
 
-Ultrasonic::SetServoDegree(int Angle)
+void Ultrasonic::SetServoDegree(int Angle)
 {
 	int servo_degree;
 	if (Angle > 180) {

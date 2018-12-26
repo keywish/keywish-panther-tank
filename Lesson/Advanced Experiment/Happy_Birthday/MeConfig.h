@@ -1,9 +1,5 @@
-
-
 #ifndef MeConfig_H
 #define MeConfig_H
-
-
 
 #define ME_PORT_DEFINED
 
@@ -20,4 +16,3 @@
 #endif // __AVR__
 
 #endif // MeConfig_H
-

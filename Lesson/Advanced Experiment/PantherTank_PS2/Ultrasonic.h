@@ -23,11 +23,11 @@ class Ultrasonic
     uint16_t RightDistance;
     uint16_t LeftDistance;
     Ultrasonic(byte trig_pin, byte echo_pin, byte servo_pin);
-    Ultrasonic::init();
-    uint16_t GetUltrasonicFrontDistance();
-    uint16_t GetUltrasonicLeftDistance();
-    uint16_t GetUltrasonicRightDistance();
-    SetServoBaseDegree(uint8_t base);
-    SetServoDegree(int degree);
+   void init(void);
+    uint16_t GetUltrasonicFrontDistance(void);
+    uint16_t GetUltrasonicLeftDistance(void);
+    uint16_t GetUltrasonicRightDistance(void);
+    void SetServoBaseDegree(uint8_t base);
+    void SetServoDegree(int degree);
 };
 #endif

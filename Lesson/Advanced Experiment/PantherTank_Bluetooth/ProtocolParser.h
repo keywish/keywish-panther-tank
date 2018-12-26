@@ -2,6 +2,7 @@
 #define   _PROTOCOLPARSER_H_
 #include "Arduino.h"
 #include "Protocol.h"
+#include "SmartCar.h"
 #include <stdint.h>
 
 #define BUFFER_SIZE 24
@@ -19,9 +20,10 @@ public:
     E_CONTOROL_FUNC GetRobotControlFun();
     int GetRobotSpeed();
     int GetRobotDegree();
-    int GetPianoSing();
+    byte* GetPianoSing();
+    long GetRgbValue();
     bool SendPackage(ST_PROTOCOL *send_dat,int len);
-    byte GetControlMode();
+    E_SMARTCAR_CONTROL_MODE GetControlMode();
 
 private:
     byte buffer[BUFFER_SIZE];
