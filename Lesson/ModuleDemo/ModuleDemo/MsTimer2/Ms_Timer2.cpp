@@ -1,4 +1,4 @@
-#include "MsTimer2.h"
+#include "Ms_Timer2.h"
 
 unsigned long MsTimer2::msecs;
 void (*MsTimer2::func)();

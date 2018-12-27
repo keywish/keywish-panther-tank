@@ -1,4 +1,4 @@
-#include "MsTimer2.h"
+#include "Ms_Timer2.h"
 
 // Switch on LED on pin 13 each second
 

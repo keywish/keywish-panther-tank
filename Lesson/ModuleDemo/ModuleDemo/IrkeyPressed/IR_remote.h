@@ -1,6 +1,6 @@
 
-#ifndef IRremote_h
-#define IRremote_h
+#ifndef IR_remote_h
+#define IR_remote_h
 
 /* Includes ------------------------------------------------------------------*/
 #include <stdint.h>

@@ -42,8 +42,8 @@
    detach()    - Stops an attached servos from pulsing its i/o pin. 
  */
 
-#ifndef Servo_h
-#define Servo_h
+#ifndef Servo_test_h
+#define Servo_test_h
 
 #include <inttypes.h>
 

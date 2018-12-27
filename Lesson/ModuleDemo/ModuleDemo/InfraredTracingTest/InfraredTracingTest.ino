@@ -1,4 +1,4 @@
-int left1,centre,right1,left2,right2;
+int left1,center,right1,left2,right2;
 void setup()
 {
     pinMode(A0, INPUT);

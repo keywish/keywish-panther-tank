@@ -1,5 +1,5 @@
-#ifndef MsTimer2_h
-#define MsTimer2_h
+#ifndef Ms_Timer2_h
+#define Ms_Timer2_h
 
 #include <avr/interrupt.h>
 
