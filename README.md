@@ -7,8 +7,7 @@ The latest information download address: https://github.com/keywish/keywish-pant
 ![](https://github.com/keywish/keywish-panther-tank/blob/Panther-tank-V3.0/V%203.0%20Branch%20Choose.png)
 # Panther-tank
 ![](https://github.com/keywish/keywish-panther-tank/blob/master/Panther-tank.jpg)
-# Component List
-![](https://github.com/keywish/keywish-panther-tank/blob/master/Component%20list.png)
+
 # Product Introduce
 "Tank" is ATMEGA328P-PU as the main control chip, and TB6612FGN is used as a multi-functional
 crawler car for motor drive chip. Compared with the traditional car, "Tank" is also equipped with wireless
