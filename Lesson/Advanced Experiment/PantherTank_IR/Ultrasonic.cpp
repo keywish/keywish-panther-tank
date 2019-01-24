@@ -1,8 +1,8 @@
 #include "Ultrasonic.h"
-
+#include "Panther-Tank.h"
 static uint16_t history = 0;
 #if ARDUINO > 10609
-Ultrasonic::Ultrasonic(byte trig_pin=TA_TRIG_PIN, byte echo_pin== TA_ECHO_PIN, byte servo_pin=TA_SERVO_PIN)
+Ultrasonic::Ultrasonic(byte trig_pin=TA_TRIG_PIN, byte echo_pin = TA_ECHO_PIN, byte servo_pin=TA_SERVO_PIN)
 #else 
  Ultrasonic::Ultrasonic(byte trig_pin, byte echo_pin, byte servo_pin)
 #endif
