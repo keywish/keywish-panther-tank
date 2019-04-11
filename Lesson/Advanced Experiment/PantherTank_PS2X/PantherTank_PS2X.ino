@@ -45,7 +45,7 @@ void setup() {
   mTank.SetBuzzerPin(TA_BUZZER_PIN);
   mTank.SetRgbPin(TA_RGB_PIN);
   mTank.Sing(S_connection);
-  mTank.SetSpeed(0);
+  mTank.SetSpeed(60);
   Ps2xStatus = mTank.SetPs2xPin(TA_PS2X_CLK, TA_PS2X_CMD, TA_PS2X_CS, TA_PS2X_DAT);
   Ps2xType = mTank.mPs2x->readType();
   delay(500);

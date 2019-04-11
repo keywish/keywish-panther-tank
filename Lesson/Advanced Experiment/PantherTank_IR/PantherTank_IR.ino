@@ -45,7 +45,7 @@ void setup() {
   mTank.SetBuzzerPin(TA_BUZZER_PIN);
   mTank.SetRgbPin(TA_RGB_PIN);
   mTank.Sing(S_connection);
-  mTank.SetSpeed(0);
+  mTank.SetSpeed(60);
   mTank.SetIrPin(TA_IR_PIN);
   delay(500);
 }
