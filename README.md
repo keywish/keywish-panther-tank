@@ -32,10 +32,6 @@ entry to proficiency. Every electronic enthusiast can easily get started and rea
 [Buy on Amazon]( https://www.amazon.com/dp/B07CFX53W4 ) </br>
 [Buy on Aliexpress]( https://www.aliexpress.com/store/product/Tank-Robot-for-Arduino-UNO-R3-Smart-Cars-Super-Starter-Kit-APP-RC-Gravity-Sensing-Remote/3269016_32919990916.html)
 
-# Video Links
-[Component Introduce](https://www.youtube.com/watch?v=nQKkJ7il_7U)</br>
-[Assembly](https://www.youtube.com/watch?v=uKt7CwDJHMs)</br>
-[Function](https://www.youtube.com/watch?v=HLLu401wWoE)</br>
 
 # Download method
 ![](https://github.com/keywish/keywish-panther-tank/blob/master/Image.png)
