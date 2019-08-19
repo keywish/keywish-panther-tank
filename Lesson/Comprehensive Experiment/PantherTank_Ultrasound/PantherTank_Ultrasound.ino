@@ -1,0 +1,112 @@
+#include<Arduino.h>
+#include<Wire.h>
+#include "Panther_Tank.h"
+#include "ProtocolParser.h"
+#include "BluetoothHandle.h"
+#include "debug.h"
+#include "KeyMap.h"
+ProtocolParser *mProtocol = new ProtocolParser();
+Tank mTank(mProtocol, 1, 2);
+void setup()
+{
+  Serial.begin(9600);
+  mTank.SetControlMode(E_ULTRASONIC_AVOIDANCE);
+  mTank.SetBatteryCheckPin(BATTERY_PIN);
+  mTank.InitServoPin();
+  mTank.InitRgbPin();
+  mTank.InitBuzzerPin();
+  mTank.SetSpeed(100);
+  mTank.init();
+  mTank.SetServoBaseDegree(90);
+  mTank.SetServoDegree(1, 90);
+}
+
+void HandleUltrasonicAvoidance(void)
+{
+  uint16_t UlFrontDistance, UlLeftDistance, UlRightDistance;
+  
+  UlFrontDistance = mTank.GetUltrasonicValue(FRONT);
+  DEBUG_LOG(DEBUG_LEVEL_INFO, "UlFrontDistance = %d \n", UlFrontDistance);
+  if (UlFrontDistance < UL_LIMIT_MIN)
+  {
+    mTank.SetSpeed(80);
+    mTank.GoBack();
+    delay(200);
+  }
+  if (UlFrontDistance < UL_LIMIT_MID)
+  {
+    mTank.KeepStop();
+    delay(100);
+    UlRightDistance = mTank.GetUltrasonicValue(RIGHT);
+    delay(50);
+    UlLeftDistance = mTank.GetUltrasonicValue(LEFT);
+    if ((UlRightDistance > UL_LIMIT_MIN) && (UlRightDistance < UL_LIMIT_MAX)) {
+      mTank.SetSpeed(100);
+      mTank.TurnRight();
+      delay(400);
+    } else if ((UlLeftDistance > UL_LIMIT_MIN) && (UlLeftDistance < UL_LIMIT_MAX)) {
+      mTank.SetSpeed(100);
+      mTank.TurnLeft();
+      delay(400);
+    } else if ((UlRightDistance < UL_LIMIT_MIN) && (UlLeftDistance < UL_LIMIT_MIN) ) {
+      mTank.SetSpeed(400);
+      mTank.TurnLeft();
+      delay(800);
+    }
+  } else {
+    mTank.SetSpeed(80);
+    mTank.GoForward();
+  }
+}
+
+void loop()
+{
+  static byte mode;
+  static bool recv_flag;
+  mProtocol->RecevData();
+  if (recv_flag = mProtocol->ParserPackage()) {
+    if (mProtocol->GetRobotControlFun() == E_CONTROL_MODE) {
+      mTank.SetControlMode(mProtocol->GetControlMode());
+      return;
+    }
+  }
+  switch (mTank.GetControlMode()) {
+    case E_ULTRASONIC_AVOIDANCE:
+      if (mode != E_ULTRASONIC_AVOIDANCE) {
+        mTank.InitUltrasonicPin();
+        mTank.SetServoDegree(1, 90);
+        mode = E_ULTRASONIC_AVOIDANCE;
+      }
+      HandleUltrasonicAvoidance();
+      break;
+    default:
+      break;
+  }
+  switch (mTank.GetStatus()) {
+    case E_FORWARD:
+      mTank.SetRgbColor(E_RGB_ALL, RGB_WHITE);
+      break;
+    case E_LEFT:
+      mTank.SetRgbColor(E_RGB_LEFT, RGB_WHITE);
+      break;
+    case E_RIGHT:
+      mTank.SetRgbColor(E_RGB_RIGHT, RGB_WHITE);
+      break;
+    case E_BACK:
+      mTank.SetRgbColor(E_RGB_ALL, RGB_RED);
+      break;
+    case E_STOP:
+      mTank.LightOff();
+      break;
+    case E_SPEED_UP:
+      mTank.sing(S_connection);
+      mTank.SetRgbColor(E_RGB_ALL, mTank.GetSpeed() * 2.5);
+      break;
+    case E_SPEED_DOWN:
+      mTank.sing(S_disconnection);
+      mTank.SetRgbColor(E_RGB_ALL, mTank.GetSpeed() * 2.5);
+      break;
+    default:
+      break;
+  }
+}
