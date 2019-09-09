@@ -48,8 +48,8 @@ void Tank::GoForward(void)
   int value = (Speed / 10) * 25;   //app contol hbot_speed is 0 ~ 100 ,pwm is 0~255
   DCMotor_1->setSpeed(value);
   DCMotor_2->setSpeed(value);
-  DCMotor_1->run(1);
-  DCMotor_2->run(1);
+  DCMotor_1->run(FORWARD);
+  DCMotor_2->run(FORWARD);
 }
 
 void Tank::GoBack(void)
@@ -58,8 +58,8 @@ void Tank::GoBack(void)
   int value = (Speed / 10) * 25;   //app contol hbot_speed is 0 ~ 100 ,pwm is 0~255
   DCMotor_1->setSpeed(value);
   DCMotor_2->setSpeed(value);
-  DCMotor_1->run(2);
-  DCMotor_2->run(2);
+  DCMotor_1->run(BACKWARD);
+  DCMotor_2->run(BACKWARD);
 
 }
 void Tank::KeepStop(void)
@@ -67,8 +67,8 @@ void Tank::KeepStop(void)
   SetStatus(E_STOP);
   DCMotor_1->setSpeed(0);
   DCMotor_2->setSpeed(0);
-  DCMotor_1->run(3);
-  DCMotor_2->run(3);
+  DCMotor_1->run(BRAKE);
+  DCMotor_2->run(BRAKE);
 }
 
 void Tank::TurnLeft(void)
@@ -78,8 +78,8 @@ void Tank::TurnLeft(void)
   DEBUG_LOG(DEBUG_LEVEL_INFO, "TurnLeft\n");
   DCMotor_1->setSpeed(value);
   DCMotor_2->setSpeed(value);
-  DCMotor_1->run(2);
-  DCMotor_2->run(1);
+  DCMotor_1->run(BACKWARD);
+  DCMotor_2->run(FORWARD);
 }
 
 void Tank::TurnRight(void)
@@ -87,8 +87,8 @@ void Tank::TurnRight(void)
   SetStatus(E_RIGHT);
   int value = (Speed / 10) * 25;   //app contol hbot_speed is 0 ~ 100 ,pwm is 0~255
   DEBUG_LOG(DEBUG_LEVEL_INFO, "TurnRight\n");
-  DCMotor_1->run(1);
-  DCMotor_2->run(2);
+  DCMotor_1->run(FORWARD);
+  DCMotor_2->run(BACKWARD);
   DCMotor_1->setSpeed(value);
   DCMotor_2->setSpeed(value);
 }
@@ -110,8 +110,8 @@ void Tank::Drive(int degree)
     } else  if (degree >= 85) {
       SetStatus(E_FORWARD);
     }
-    DCMotor_1->run(1);
-    DCMotor_2->run(1);
+    DCMotor_1->run(FORWARD);
+    DCMotor_2->run(FORWARD);
     DCMotor_1->setSpeed(value);
     DCMotor_2->setSpeed((float)(value * f));
   } else if (degree > 90 && degree <= 180) {
@@ -121,8 +121,8 @@ void Tank::Drive(int degree)
     } else  if (degree >= 175) {
       SetStatus(E_LEFT);
     }
-    DCMotor_1->run(1);
-    DCMotor_2->run(1);
+    DCMotor_1->run(FORWARD);
+    DCMotor_2->run(FORWARD);
     DCMotor_1->setSpeed((float)(value * f));
     DCMotor_2->setSpeed(value);
   } else if (degree > 180 && degree <= 270) {
@@ -132,8 +132,8 @@ void Tank::Drive(int degree)
     } else  if (degree >= 265) {
       SetStatus(E_BACK);
     }
-    DCMotor_1->run(2);
-    DCMotor_2->run(2);
+    DCMotor_1->run(BACKWARD);
+    DCMotor_2->run(BACKWARD);
     DCMotor_1->setSpeed((float)(value * f));
     DCMotor_2->setSpeed(value);
   } else if (degree > 270 && degree <= 360) {
@@ -143,8 +143,8 @@ void Tank::Drive(int degree)
     } else  if (degree >= 355) {
       SetStatus(E_RIGHT);
     }
-    DCMotor_1->run(2);
-    DCMotor_2->run(2);
+    DCMotor_1->run(BACKWARD);
+    DCMotor_2->run(BACKWARD);
     DCMotor_1->setSpeed(value);
     DCMotor_2->setSpeed((float)(value * f));
   }
@@ -240,7 +240,7 @@ byte Tank::GetUltrasonicValue(byte direction)
     delay(400);
     SetServoDegree(1, 90);
   } else if (direction == 2) {
-    SetServoDegree(1, 15);
+    SetServoDegree(1, 10);
     distance = UT->GetUltrasonicDistance();
     delay(400);
     SetServoDegree(1, 90);
@@ -376,7 +376,7 @@ void Tank::SendUltrasonicData(void)
   SendData.start_code = 0xAA;
   SendData.type = E_PANTHER_TANK;
   SendData.addr = 0x01;
-  SendData.function = E_ULTRASONIC;
+  SendData.function = E_ULTRASONIC_MODE;
   SendData.data = value.data;
   SendData.len = 10;
   SendData.end_code = 0x55;

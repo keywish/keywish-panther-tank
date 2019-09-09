@@ -23,6 +23,7 @@ class ProtocolParser
     int GetRobotSpeed(void);
     int GetRobotDegree(void);
     int GetServoDegree(void);
+    int GetServoDegreeNum(void);
     uint16_t GetBluetoothButton();
     bool GetBluetoothButton(uint16_t Button);
     E_BUZZER_TYPE GetBuzzerMode(void);

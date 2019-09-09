@@ -72,21 +72,6 @@ class Tank: public SmartCar {
     uint16_t GetBatteryValue(void);
     void SendBatteryPackage(uint16_t battery_value);
     void SendUltrasonicData(void);
-    //    void SendUltrasonicData();
-    //    void PianoSing(ST_MUSIC_TYPE music);
-    //    int SetPs2xPin(uint8_t clk = TA_PS2X_CLK, uint8_t cmd = TA_PS2X_CMD, uint8_t att = TA_PS2X_CS, uint8_t dat = TA_PS2X_DAT);
-    //    int ResetPs2xPin(void);
-    //    void SetBatteryCheckPin(uint8_t pin);
-    //    uint16_t GetBatteryValue(void);
-    //    void SendBatteryPackage(uint16_t battery_value);
-    //    void SendVersionPackage(void);
-
-    //    void SetUltrasonicPin(uint8_t Trig_Pin = TA_TRIG_PIN, uint8_t Echo_Pin = TA_ECHO_PIN, uint8_t Sevo_Pin = TA_SERVO_PIN);
-    //    #if (EM_MOTOR_SHIELD_BOARD_VERSION > 2)
-    //    void SetNRF24L01Pin(uint8_t CE_Pin = TA_CE_PIN, uint8_t CSN_Pin = TA_CSN_PIN);
-    //    void InitNrf24L01(char *Raddr);
-    //    int  GetNrf24L01(void);
-    //    #endif
 };
 
 #endif  /* _AURORARACING_H_ */

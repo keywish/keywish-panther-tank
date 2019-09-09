@@ -93,14 +93,6 @@ void loop()
     case E_STOP:
       mTank.LightOff();
       break;
-    case E_SPEED_UP:
-      mTank.sing(S_connection);
-      mTank.SetRgbColor(E_RGB_ALL, mTank.GetSpeed() * 2.5);
-      break;
-    case E_SPEED_DOWN:
-      mTank.sing(S_disconnection);
-      mTank.SetRgbColor(E_RGB_ALL, mTank.GetSpeed() * 2.5);
-      break;
     default:
       break;
   }

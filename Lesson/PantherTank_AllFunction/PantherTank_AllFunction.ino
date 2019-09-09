@@ -7,10 +7,11 @@
 #include "KeyMap.h"
 ProtocolParser *mProtocol = new ProtocolParser();
 Tank mTank(mProtocol, 1, 2);
+static byte count = 0;
 void setup()
 {
   Serial.begin(9600);
-  mTank.SetControlMode(E_BLUETOOTH_CONTROL);
+  mTank.SetControlMode(E_BLUETOOTH_CONTROL);//E_ULTRASONIC_AVOIDANCE E_BLUETOOTH_CONTROL E_PS2_REMOTE_CONTROL
   mTank.SetBatteryCheckPin(BATTERY_PIN);
   mTank.InitServoPin();
   mTank.InitRgbPin();
@@ -19,6 +20,9 @@ void setup()
   mTank.init();
   mTank.SetServoBaseDegree(90);
   mTank.SetServoDegree(1, 90);
+  mTank.SetServoDegree(2, 90);
+  mTank.SetServoDegree(3, 90);
+  mTank.SetServoDegree(4, 90);
 }
 
 void HandleBluetoothRemote(bool recv_flag)
@@ -34,16 +38,20 @@ void HandleBluetoothRemote(bool recv_flag)
           case BT_PAD_DOWN:
             mTank.GoBack();
             break;
-          case BT_PAD_LEFT:
+          case BT_PINK:
             mTank.TurnLeft();
             break;
-          case BT_PAD_RIGHT:
+          case BT_RED:
             mTank.TurnRight();
             break;
-          case BT_L3:
+          case BT_GREEN:
+            mTank.sing(S_connection);
+            mTank.SetRgbColor(E_RGB_ALL, mTank.GetSpeed() * 2.5);
             mTank.SpeedUp(10);
             break;
-          case BT_R3:
+          case BT_BLUE:
+            mTank.sing(S_disconnection);
+            mTank.SetRgbColor(E_RGB_ALL, mTank.GetSpeed() * 2.5);
             mTank.SpeedDown(10);
             break;
         }
@@ -61,11 +69,11 @@ void HandleBluetoothRemote(bool recv_flag)
         mTank.SetRgbColor(E_RGB_ALL, mProtocol->GetRgbValue());
         break;
       case E_SERVER_DEGREE:
-        mTank.SetServoDegree(1, mProtocol->GetServoDegree());
+        mTank.SetServoDegree(mProtocol->GetServoDegreeNum(), mProtocol->GetServoDegree());
         break;
     }
-  } 
-  
+    mTank.LightOff();
+  }
 }
 
 void HandlePS2(int Ps2xKey, uint16_t Ps2xRightAngle, uint16_t Ps2xLeftAngle)
@@ -84,9 +92,13 @@ void HandlePS2(int Ps2xKey, uint16_t Ps2xRightAngle, uint16_t Ps2xLeftAngle)
       mTank.Drive(20);
       break;
     case PSB_CROSS:
+      mTank.sing(S_disconnection);
+      mTank.SetRgbColor(E_RGB_ALL, mTank.GetSpeed() * 2.5);
       mTank.SpeedDown(5);
       break;
     case PSB_TRIANGLE:
+      mTank.sing(S_connection);
+      mTank.SetRgbColor(E_RGB_ALL, mTank.GetSpeed() * 2.5);
       mTank.SpeedUp(5);
       break;
     case PSB_SQUARE:
@@ -102,11 +114,15 @@ void HandleInfaredRemote (byte Irkey)
 {
   switch (Irkey) {
     case IR_KEYCODE_STAR:
+      mTank.sing(S_connection);
+      mTank.SetRgbColor(E_RGB_ALL, mTank.GetSpeed() * 2.5);
       mTank.SpeedUp(10);
       DEBUG_LOG(DEBUG_LEVEL_INFO, "mTank.Speed = %d \n", mTank.Speed);
       break;
     case IR_KEYCODE_POUND:
       DEBUG_LOG(DEBUG_LEVEL_INFO, " start Degree = %d \n", mTank.Degree);
+      mTank.sing(S_disconnection);
+      mTank.SetRgbColor(E_RGB_ALL, mTank.GetSpeed() * 2.5);
       mTank.SpeedDown(10);
       break;
     case IR_KEYCODE_UP:
@@ -133,6 +149,10 @@ void HandleUltrasonicAvoidance(void)
 {
   uint16_t UlFrontDistance, UlLeftDistance, UlRightDistance;
   UlFrontDistance = mTank.GetUltrasonicValue(0);
+  if (count++ > 50) {
+    mTank.SendUltrasonicData();
+    count = 0;
+  }
   DEBUG_LOG(DEBUG_LEVEL_INFO, "UlFrontDistance = %d \n", UlFrontDistance);
   if (UlFrontDistance < UL_LIMIT_MIN)
   {
@@ -291,14 +311,6 @@ void loop()
       break;
     case E_STOP:
       mTank.LightOff();
-      break;
-    case E_SPEED_UP:
-      mTank.sing(S_connection);
-      mTank.SetRgbColor(E_RGB_ALL, mTank.GetSpeed() * 2.5);
-      break;
-    case E_SPEED_DOWN:
-      mTank.sing(S_disconnection);
-      mTank.SetRgbColor(E_RGB_ALL, mTank.GetSpeed() * 2.5);
       break;
     default:
       break;

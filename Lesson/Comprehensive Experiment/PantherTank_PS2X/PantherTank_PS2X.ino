@@ -42,9 +42,13 @@ void HandlePS2(int Ps2xKey, uint16_t Ps2xRightAngle, uint16_t Ps2xLeftAngle)
       mTank.Drive(20);
       break;
     case PSB_CROSS:
+      mTank.sing(S_disconnection);
+      mTank.SetRgbColor(E_RGB_ALL, mTank.GetSpeed() * 2.5);
       mTank.SpeedDown(5);
       break;
     case PSB_TRIANGLE:
+      mTank.sing(S_connection);
+      mTank.SetRgbColor(E_RGB_ALL, mTank.GetSpeed() * 2.5);
       mTank.SpeedUp(5);
       break;
     case PSB_SQUARE:
@@ -146,14 +150,6 @@ void loop()
       break;
     case E_STOP:
       mTank.LightOff();
-      break;
-    case E_SPEED_UP:
-      mTank.sing(S_connection);
-      mTank.SetRgbColor(E_RGB_ALL, mTank.GetSpeed() * 2.5);
-      break;
-    case E_SPEED_DOWN:
-      mTank.sing(S_disconnection);
-      mTank.SetRgbColor(E_RGB_ALL, mTank.GetSpeed() * 2.5);
       break;
     default:
       break;

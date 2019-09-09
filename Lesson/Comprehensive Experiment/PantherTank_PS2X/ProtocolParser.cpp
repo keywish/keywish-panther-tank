@@ -245,7 +245,16 @@ ST_MUSIC_TYPE ProtocolParser::GetBuzzerMusic(void)
 int ProtocolParser::GetServoDegree(void)
 {
     if (recv->function == E_SERVER_DEGREE ) {
-        return (int)(*(recv->data));
+        return (uint8_t)(*(recv->data+1));
+    } else {
+        return 0;
+    }
+}
+
+int ProtocolParser::GetServoDegreeNum(void)
+{
+    if (recv->function == E_SERVER_DEGREE ) {
+        return (uint8_t)(*(recv->data));
     } else {
         return 0;
     }

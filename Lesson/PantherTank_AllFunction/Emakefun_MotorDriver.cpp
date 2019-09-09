@@ -140,7 +140,7 @@ void Emakefun_EncoderMotor::run(uint8_t cmd) {
       MC->setPin(IN2pin, HIGH);
       break;
     case BRAKE:
-      MC->setPin(IN1pin, HIGH);
+      MC->setPin(IN1pin, LOW);
       MC->setPin(IN2pin, LOW);
       break;
   }

@@ -7,6 +7,7 @@
 #include "KeyMap.h"
 ProtocolParser *mProtocol = new ProtocolParser();
 Tank mTank(mProtocol, 1, 2);
+static byte count = 0;
 void setup()
 {
   Serial.begin(9600);
@@ -24,8 +25,11 @@ void setup()
 void HandleUltrasonicAvoidance(void)
 {
   uint16_t UlFrontDistance, UlLeftDistance, UlRightDistance;
-  
   UlFrontDistance = mTank.GetUltrasonicValue(FRONT);
+  if (count++ > 50) {
+    mTank.SendUltrasonicData();
+    count = 0;
+  }
   DEBUG_LOG(DEBUG_LEVEL_INFO, "UlFrontDistance = %d \n", UlFrontDistance);
   if (UlFrontDistance < UL_LIMIT_MIN)
   {
@@ -97,14 +101,6 @@ void loop()
       break;
     case E_STOP:
       mTank.LightOff();
-      break;
-    case E_SPEED_UP:
-      mTank.sing(S_connection);
-      mTank.SetRgbColor(E_RGB_ALL, mTank.GetSpeed() * 2.5);
-      break;
-    case E_SPEED_DOWN:
-      mTank.sing(S_disconnection);
-      mTank.SetRgbColor(E_RGB_ALL, mTank.GetSpeed() * 2.5);
       break;
     default:
       break;

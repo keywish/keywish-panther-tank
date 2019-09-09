@@ -240,7 +240,7 @@ byte Tank::GetUltrasonicValue(byte direction)
     delay(400);
     SetServoDegree(1, 90);
   } else if (direction == 2) {
-    SetServoDegree(1, 15);
+    SetServoDegree(1, 10);
     distance = UT->GetUltrasonicDistance();
     delay(400);
     SetServoDegree(1, 90);
@@ -376,7 +376,7 @@ void Tank::SendUltrasonicData(void)
   SendData.start_code = 0xAA;
   SendData.type = E_PANTHER_TANK;
   SendData.addr = 0x01;
-  SendData.function = E_ULTRASONIC;
+  SendData.function = E_ULTRASONIC_MODE;
   SendData.data = value.data;
   SendData.len = 10;
   SendData.end_code = 0x55;
