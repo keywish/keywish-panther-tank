@@ -3,7 +3,7 @@
 
 #include <inttypes.h>
 #include <Wire.h>
-#include "SPI.h"
+#include <SPI.h>
 #include "Emakefun_MS_PWMServoDriver.h"
 #include "IRremote.h"
 #include "PS2X_lib.h"  //for v1.6
@@ -12,6 +12,10 @@
 #include "Sounds.h"
 #include "nRF24L01.h"
 //#define MOTORDEBUG
+
+#define MOTOR_DRIVER_BOARD_V3 3
+#define MOTOR_DRIVER_BOARD_V4 4
+#define MOTOR_DRIVER_BOARD_V5 5
 
 #define MICROSTEPS 16         // 8 or 16
 
@@ -23,6 +27,11 @@
 #define MOTOR3_B 7
 #define MOTOR4_A 0
 #define MOTOR4_B 6
+
+#define M1 1
+#define M2 2
+#define M3 3
+#define M4 4
 
 #define FORWARD 1
 #define BACKWARD 2
@@ -38,7 +47,12 @@
 #define ECHO_PIN A3
 #define TRIG_PIN A2
 #define IR_PIN 8
+
+#if (MOTOR_DRIVER_BOARD_VER == 3)
 #define BUZZER_PIN 9
+#else
+#define BUZZER_PIN A0
+#endif
 
 #define PS2_DAT   12
 #define PS2_CMD   11
@@ -46,16 +60,14 @@
 #define PS2_CLK   13
 
 #define NRF24L01_CE 10
-#define NRF24L01_CSN 8
+#define NRF24L01_CSN 9
 
-#define NRF_NAME "emakefun"
+#define NRF_NAME "Tank"
 #define NRF_DATA_LEN 12
-typedef enum
-{
-    E_RGB_ALL = 0,
-    E_RGB_RIGHT = 1,
-    E_RGB_LEFT = 2
-} E_RGB_INDEX;
+
+#define UL_LIMIT_MIN 16
+#define UL_LIMIT_MID 20
+#define UL_LIMIT_MAX 500
 
 typedef enum
 {
@@ -69,6 +81,8 @@ typedef enum
     E_SENSOR_MAX,
 } E_SENSOR_INDEX;
 
+typedef void (*FuncPtr)(void);
+
 class Emakefun_MotorDriver;
 
 class Emakefun_Sensor
@@ -80,12 +94,12 @@ public:
   PS2X *mPs2x;
   Buzzer *mBuzzer;
   RGBLed *mRgb;
-  Nrf24l *mNRF24L01;
+  Nrf24l *mNrf24L01;
   void SetRgbColor(E_RGB_INDEX index, long Color);
   void Sing(byte songName);
   uint16_t GetUltrasonicDistance(void);
-  int  GetNrf24L01(char *RaddrName);
-  void sendNrf24l01(char *TaddrName,int SendNrfData);
+  int  GetNrf24L01(char *RxaddrName);
+  void sendNrf24l01(char *TxaddrName,int SendNrfData);
 private:
   uint8_t IrPin;      // Infrared remoter pin
   uint8_t BuzzerPin;  // Buzzer pin
@@ -107,8 +121,10 @@ class Emakefun_DCMotor
   
  private:
   uint8_t PWMpin, IN1pin, IN2pin;
+  int DcSpeed;
   Emakefun_MotorDriver *MC;
   uint8_t motornum;
+
 };
 
 class Emakefun_EncoderMotor {
@@ -118,10 +134,15 @@ class Emakefun_EncoderMotor {
   void run(uint8_t);
   void setSpeed(uint8_t);
   void release(void);
-
+  void init(FuncPtr encoder_fun);
+  void EncoderCallback1(void);
+  void EncoderCallback2(void);
+  static FuncPtr CallBack[2];
  private:
-  uint8_t IN1pin, IN2pin, PWMpin , ENCODER1pin, ENCODER2pin;
+  uint8_t PWMpin, IN1pin, IN2pin;
+  uint8_t ENCODER1pin, ENCODER2pin;
   uint8_t pluse;
+  int DcSpeed;
   Emakefun_MotorDriver *MC;
   uint8_t encodernum;
 };
@@ -147,24 +168,23 @@ class Emakefun_StepperMotor {
 
 class Emakefun_Servo
 {
- public:
+public:
   Emakefun_Servo(void);
   friend class Emakefun_MotorDriver;
   void setServoPulse(double pulse);
   void writeServo(uint8_t angle);
   uint8_t readDegrees();
- 
- private:
+private:
   uint8_t PWMpin;
   Emakefun_MotorDriver *MC;
-  uint8_t servonum,currentAngle;
+  uint8_t servonum, currentAngle;
 };
 
 class Emakefun_MotorDriver
 {
  public:
-    Emakefun_MotorDriver(uint8_t addr = 0x60);
-    friend class Emakefun_DCMotor;
+    Emakefun_MotorDriver(uint8_t addr = 0x60, uint8_t version = 4);
+    uint8_t _version;
     void begin(uint16_t freq = 1600);
     void setPWM(uint8_t pin, uint16_t val);
     void setPin(uint8_t pin, boolean val);
@@ -172,16 +192,22 @@ class Emakefun_MotorDriver
     Emakefun_StepperMotor *getStepper(uint16_t steps, uint8_t n);
     Emakefun_EncoderMotor *getEncoderMotor(uint8_t num);
     Emakefun_Servo *getServo(uint8_t n);
-    Emakefun_Sensor *getSensor(E_SENSOR_INDEX n);
+    //Emakefun_Sensor *getSensor();
+    void *getSensor(E_SENSOR_INDEX n);
  private:
+
     uint8_t _addr;
     uint16_t _freq;
     Emakefun_DCMotor dcmotors[4];
     Emakefun_EncoderMotor encoder[2];
     Emakefun_StepperMotor steppers[2];
     Emakefun_MS_PWMServoDriver _pwm;
+#if (MOTOR_DRIVER_BOARD_VER == 3)
     Emakefun_Servo servos[4];
-    Emakefun_Sensor sensors[E_SENSOR_MAX];
+#else
+    Emakefun_Servo servos[8];
+#endif
+    Emakefun_Sensor sensors;
 };
 
 #endif

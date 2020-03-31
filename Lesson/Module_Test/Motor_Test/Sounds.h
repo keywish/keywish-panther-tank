@@ -1,6 +1,27 @@
 #ifndef _SOUNDS_H_
 #define _SOUNDS_H_
 
+typedef enum {
+    E_NOTE,
+    E_SOUND,
+    E_MUSIC,
+    E_BUZZER_TYPE_MAX,
+}E_BUZZER_TYPE;
+
+typedef enum {
+    E_BEAT_8_1,
+    E_BEAT_4_1,
+    E_BEAT_2_1,
+    E_BEAT_1,
+    E_BEAT_2,
+    E_BEAT_4
+}E_MUSIC_BEAT;
+
+typedef struct {
+    uint16_t note;
+    E_MUSIC_BEAT beat;
+}ST_MUSIC_TYPE;
+
 //***********************************************************************************
 //*********************************SOUNDS DEFINES************************************
 //***********************************************************************************
@@ -109,7 +130,6 @@
 #define  note_D8  4698.64  //D8
 #define  note_Eb8 4978.03  //D#8/Eb8
 
-
 #define S_connection 	0
 #define S_disconnection 1
 #define S_buttonPushed 	2
@@ -129,5 +149,6 @@
 #define S_fart1			16
 #define S_fart2			17
 #define S_fart3			18
+#define S_didi			19
 
 #endif /* _SOUNDS_H_ */

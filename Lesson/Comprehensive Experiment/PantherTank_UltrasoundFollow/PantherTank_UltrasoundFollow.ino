@@ -6,20 +6,22 @@
 #include "debug.h"
 #include "KeyMap.h"
 ProtocolParser *mProtocol = new ProtocolParser();
-Tank mTank(mProtocol, 1, 2);
+Tank mTank(mProtocol);
 void setup()
 {
+
   Serial.begin(9600);
+  mTank.init(M2, M1);
   mTank.SetControlMode(E_ULTRASONIC_FOLLOW_MODE);
-  mTank.SetBatteryCheckPin(BATTERY_PIN);
-  mTank.InitServoPin();
-  mTank.InitUltrasonicPin();
-  mTank.InitRgbPin();
-  mTank.InitBuzzerPin();
-  mTank.SetSpeed(100);
-  mTank.init();
+  mTank.InitServo();
+  mTank.InitRgb();
+  mTank.InitBuzzer();
+  mTank.SetSpeed(50);
+  mTank.InitUltrasonic();
   mTank.SetServoBaseDegree(90);
   mTank.SetServoDegree(1, 90);
+  Serial.println("init ok");
+  mTank.sing(S_connection);
 }
 
 void UltrasonicFollow()
@@ -31,7 +33,7 @@ void UltrasonicFollow()
     mTank.GoBack();
   } else if (UlFrontDistance > 14) {
     mTank.GoForward();
-  } else if (10 <= UlFrontDistance <= 4) {
+  } else if (10 <= UlFrontDistance <= 14) {
     mTank.KeepStop();
   }
 }

@@ -2,7 +2,7 @@
 #include<Wire.h>
 #include "Emakefun_MotorDriver.h"
 
-Emakefun_MotorDriver mMotorDriver = Emakefun_MotorDriver();
+Emakefun_MotorDriver mMotorDriver = Emakefun_MotorDriver(0x60, MOTOR_DRIVER_BOARD_V5);
 Emakefun_Servo *mServo1 = mMotorDriver.getServo(1);
 
 char inByte = 0; //Serial port to receive data

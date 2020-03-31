@@ -1,4 +1,4 @@
-#define BUZZER_PIN 9 //buzzer pin 9
+#define BUZZER_PIN A0 //buzzer pin A0
 #define RGB A1      //RGB pin A1
 
 #define Do 262

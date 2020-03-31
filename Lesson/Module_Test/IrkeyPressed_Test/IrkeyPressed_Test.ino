@@ -1,4 +1,5 @@
 #include "IRremote.h"
+#include "Keymap.h"
 
 #define IR_PIN 8
 
@@ -14,7 +15,7 @@ void setup()
 void loop()
 {
     if (keycode = ir.getCode()) {
-        String key_name = ir.getKeyMap(keycode);
+        String key_name = ir.getKeyMap(keycode,IR_TYPE_NORMAL);
         sprintf(str, "Get ir code: 0x%x key name: %s \n", keycode, (char *)key_name.c_str());
         Serial.println(str);
     } else {

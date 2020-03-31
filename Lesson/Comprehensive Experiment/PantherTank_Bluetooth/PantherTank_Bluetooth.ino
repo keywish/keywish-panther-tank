@@ -1,33 +1,31 @@
-#include<Arduino.h>
-#include<Wire.h>
+#include "debug.h"
+#include "Emakefun_MotorDriver.h"
 #include "Panther_Tank.h"
 #include "ProtocolParser.h"
 #include "BluetoothHandle.h"
-#include "debug.h"
 #include "KeyMap.h"
 ProtocolParser *mProtocol = new ProtocolParser();
-Tank mTank(mProtocol, 1, 2);
+Tank mTank(mProtocol);
+byte count = 0;
+
 void setup()
 {
   Serial.begin(9600);
-  mTank.SetControlMode(E_BLUETOOTH_CONTROL);//E_PS2_REMOTE_CONTROL//E_BLUETOOTH_CONTROL//E_ULTRASONIC_FOLLOW_MODE//E_ULTRASONIC_AVOIDANCE
-  mTank.SetBatteryCheckPin(BATTERY_PIN);
-  mTank.InitServoPin();
-  mTank.InitRgbPin();
-  mTank.InitBuzzerPin();
-  mTank.SetSpeed(100);
-  mTank.init();
+  mTank.init(M2, M1);
+  mTank.SetControlMode(E_BLUETOOTH_CONTROL);
+  mTank.InitServo();
+  mTank.InitRgb();
+  mTank.InitBuzzer();
+  mTank.SetSpeed(50);
   mTank.SetServoBaseDegree(90);
   mTank.SetServoDegree(1, 90);
-  mTank.SetServoDegree(2, 90);
-  mTank.SetServoDegree(3, 90);
-  mTank.SetServoDegree(4, 90);
+  Serial.println("init ok");
+  mTank.sing(S_connection);
 }
 
 void HandleBluetoothRemote(bool recv_flag)
 {
   if (recv_flag) {
-    
     switch (mProtocol->GetRobotControlFun()) {
       case E_BUTTON:
         switch (mProtocol->GetBluetoothButton())
@@ -38,11 +36,17 @@ void HandleBluetoothRemote(bool recv_flag)
           case BT_PAD_DOWN:
             mTank.GoBack();
             break;
+          case BT_PAD_LEFT:
+            mTank.Drive(160);
+            break;
+          case BT_PAD_RIGHT:
+            mTank.Drive(20);
+            break;
           case BT_PINK:
-            mTank.TurnLeft();
+            mTank.TurnLeftRotate();
             break;
           case BT_RED:
-            mTank.TurnRight();
+            mTank.TurnRightRotate();
             break;
           case BT_GREEN:
             mTank.sing(S_connection);
@@ -71,13 +75,20 @@ void HandleBluetoothRemote(bool recv_flag)
       case E_SERVER_DEGREE:
         mTank.SetServoDegree(mProtocol->GetServoDegreeNum(), mProtocol->GetServoDegree());
         break;
+      case E_BUZZER_MODE:
+        if (mProtocol->GetBuzzerMode() == E_SOUND) {
+          mTank.sing(mProtocol->GetBuzzerSound());
+        }
+        break;
     }
     mTank.LightOff();
   }
 }
 
+
 void loop()
 {
+  static byte mode;
   static bool recv_flag;
   mProtocol->RecevData();
   if (recv_flag = mProtocol->ParserPackage()) {
@@ -98,10 +109,10 @@ void loop()
     case E_FORWARD:
       mTank.SetRgbColor(E_RGB_ALL, RGB_WHITE);
       break;
-    case E_LEFT:
+    case E_LEFT_ROTATE:
       mTank.SetRgbColor(E_RGB_LEFT, RGB_WHITE);
       break;
-    case E_RIGHT:
+    case E_RIGHT_ROTATE:
       mTank.SetRgbColor(E_RGB_RIGHT, RGB_WHITE);
       break;
     case E_BACK:

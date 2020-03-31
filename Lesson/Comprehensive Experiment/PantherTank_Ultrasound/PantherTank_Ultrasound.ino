@@ -1,31 +1,33 @@
-#include<Arduino.h>
-#include<Wire.h>
+#include "debug.h"
+#include "Emakefun_MotorDriver.h"
 #include "Panther_Tank.h"
 #include "ProtocolParser.h"
 #include "BluetoothHandle.h"
-#include "debug.h"
 #include "KeyMap.h"
 ProtocolParser *mProtocol = new ProtocolParser();
-Tank mTank(mProtocol, 1, 2);
-static byte count = 0;
+Tank mTank(mProtocol);
+byte count = 0;
+
 void setup()
 {
   Serial.begin(9600);
+  mTank.init(M2, M1);
   mTank.SetControlMode(E_ULTRASONIC_AVOIDANCE);
-  mTank.SetBatteryCheckPin(BATTERY_PIN);
-  mTank.InitServoPin();
-  mTank.InitRgbPin();
-  mTank.InitBuzzerPin();
-  mTank.SetSpeed(100);
-  mTank.init();
+  mTank.InitServo();
+  mTank.InitRgb();
+  mTank.InitBuzzer();
+  mTank.SetSpeed(50);
   mTank.SetServoBaseDegree(90);
   mTank.SetServoDegree(1, 90);
+  mTank.InitUltrasonic();
+  Serial.println("init ok");
+  mTank.sing(S_connection);
 }
 
 void HandleUltrasonicAvoidance(void)
 {
   uint16_t UlFrontDistance, UlLeftDistance, UlRightDistance;
-  UlFrontDistance = mTank.GetUltrasonicValue(FRONT);
+  UlFrontDistance = mTank.GetUltrasonicValue(0);
   if (count++ > 50) {
     mTank.SendUltrasonicData();
     count = 0;
@@ -41,9 +43,9 @@ void HandleUltrasonicAvoidance(void)
   {
     mTank.KeepStop();
     delay(100);
-    UlRightDistance = mTank.GetUltrasonicValue(RIGHT);
+    UlRightDistance = mTank.GetUltrasonicValue(2);
     delay(50);
-    UlLeftDistance = mTank.GetUltrasonicValue(LEFT);
+    UlLeftDistance = mTank.GetUltrasonicValue(1);
     if ((UlRightDistance > UL_LIMIT_MIN) && (UlRightDistance < UL_LIMIT_MAX)) {
       mTank.SetSpeed(100);
       mTank.TurnRight();
@@ -63,6 +65,7 @@ void HandleUltrasonicAvoidance(void)
   }
 }
 
+
 void loop()
 {
   static byte mode;
@@ -76,11 +79,6 @@ void loop()
   }
   switch (mTank.GetControlMode()) {
     case E_ULTRASONIC_AVOIDANCE:
-      if (mode != E_ULTRASONIC_AVOIDANCE) {
-        mTank.InitUltrasonicPin();
-        mTank.SetServoDegree(1, 90);
-        mode = E_ULTRASONIC_AVOIDANCE;
-      }
       HandleUltrasonicAvoidance();
       break;
     default:
@@ -90,10 +88,10 @@ void loop()
     case E_FORWARD:
       mTank.SetRgbColor(E_RGB_ALL, RGB_WHITE);
       break;
-    case E_LEFT:
+    case E_LEFT_ROTATE:
       mTank.SetRgbColor(E_RGB_LEFT, RGB_WHITE);
       break;
-    case E_RIGHT:
+    case E_RIGHT_ROTATE:
       mTank.SetRgbColor(E_RGB_RIGHT, RGB_WHITE);
       break;
     case E_BACK:

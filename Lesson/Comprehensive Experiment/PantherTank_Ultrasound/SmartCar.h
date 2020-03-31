@@ -53,6 +53,7 @@ public :
     uint8_t Temperature;
     byte Speed ;
     int Degree;
+    void Move(int directions);
     void GoForward(void);
     void GoBack(void);
     void TurnLeft(void);

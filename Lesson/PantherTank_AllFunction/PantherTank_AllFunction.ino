@@ -1,30 +1,27 @@
-#include<Arduino.h>
-#include<Wire.h>
+#include "debug.h"
+#include "Emakefun_MotorDriver.h"
 #include "Panther_Tank.h"
 #include "ProtocolParser.h"
 #include "BluetoothHandle.h"
-#include "debug.h"
 #include "KeyMap.h"
 ProtocolParser *mProtocol = new ProtocolParser();
-Tank mTank(mProtocol, 1, 2);
-static byte count = 0;
+Tank mTank(mProtocol);
+byte count = 0;
+
 void setup()
 {
   Serial.begin(9600);
-  mTank.SetControlMode(E_BLUETOOTH_CONTROL);//E_ULTRASONIC_AVOIDANCE E_BLUETOOTH_CONTROL E_PS2_REMOTE_CONTROL
-  mTank.SetBatteryCheckPin(BATTERY_PIN);
-  mTank.InitServoPin();
-  mTank.InitRgbPin();
-  mTank.InitBuzzerPin();
-  mTank.SetSpeed(100);
-  mTank.init();
+  mTank.init(M2, M1);
+  mTank.SetControlMode(E_BLUETOOTH_CONTROL);
+  mTank.InitServo();
+  mTank.InitRgb();
+  mTank.InitBuzzer();
+  mTank.SetSpeed(50);
   mTank.SetServoBaseDegree(90);
   mTank.SetServoDegree(1, 90);
-  mTank.SetServoDegree(2, 90);
-  mTank.SetServoDegree(3, 90);
-  mTank.SetServoDegree(4, 90);
+  Serial.println("init ok");
+  mTank.sing(S_connection);
 }
-
 void HandleBluetoothRemote(bool recv_flag)
 {
   if (recv_flag) {
@@ -38,11 +35,17 @@ void HandleBluetoothRemote(bool recv_flag)
           case BT_PAD_DOWN:
             mTank.GoBack();
             break;
+          case BT_PAD_LEFT:
+            mTank.Drive(160);
+            break;
+          case BT_PAD_RIGHT:
+            mTank.Drive(20);
+            break;
           case BT_PINK:
-            mTank.TurnLeft();
+            mTank.TurnLeftRotate();
             break;
           case BT_RED:
-            mTank.TurnRight();
+            mTank.TurnRightRotate();
             break;
           case BT_GREEN:
             mTank.sing(S_connection);
@@ -71,48 +74,61 @@ void HandleBluetoothRemote(bool recv_flag)
       case E_SERVER_DEGREE:
         mTank.SetServoDegree(mProtocol->GetServoDegreeNum(), mProtocol->GetServoDegree());
         break;
+      case E_BUZZER_MODE:
+        if (mProtocol->GetBuzzerMode() == E_SOUND) {
+          mTank.sing(mProtocol->GetBuzzerSound());
+        }
+        break;
     }
     mTank.LightOff();
   }
 }
 
-void HandlePS2(int Ps2xKey, uint16_t Ps2xRightAngle, uint16_t Ps2xLeftAngle)
+void HandlePS2(void)
 {
-  switch (Ps2xKey) {
-    case PSB_PAD_UP:
-      mTank.GoForward();
-      break;
-    case PSB_PAD_DOWN:
-      mTank.GoBack();
-      break;
-    case PSB_PAD_LEFT:
-      mTank.Drive(160);
-      break;
-    case PSB_PAD_RIGHT:
-      mTank.Drive(20);
-      break;
-    case PSB_CROSS:
-      mTank.sing(S_disconnection);
-      mTank.SetRgbColor(E_RGB_ALL, mTank.GetSpeed() * 2.5);
-      mTank.SpeedDown(5);
-      break;
-    case PSB_TRIANGLE:
+  int Ps2xKey;
+  mTank.Ps2x->read_gamepad(false, 0);
+  if (mTank.Ps2x->ButtonDataByte()) {
+    if (mTank.Ps2x->Button(PSB_TRIANGLE)) {
       mTank.sing(S_connection);
       mTank.SetRgbColor(E_RGB_ALL, mTank.GetSpeed() * 2.5);
       mTank.SpeedUp(5);
-      break;
-    case PSB_SQUARE:
+      return;
+    }
+    if (mTank.Ps2x->Button(PSB_CROSS)) {
+      mTank.sing(S_disconnection);
+      mTank.SetRgbColor(E_RGB_ALL, mTank.GetSpeed() * 2.5);
+      mTank.SpeedDown(5);
+      return;
+    }
+    if (mTank.Ps2x->Button(PSB_PAD_UP)) {
+      mTank.GoForward();
+    }
+    if (mTank.Ps2x->Button(PSB_PAD_DOWN)) {
+      mTank.GoBack();
+    }
+    if (mTank.Ps2x->Button(PSB_PAD_LEFT)) {
       mTank.TurnLeft();
-      break;
-    case PSB_CIRCLE:
+    }
+    if (mTank.Ps2x->Button(PSB_PAD_RIGHT)) {
       mTank.TurnRight();
-      break;
+    }
+    if (mTank.Ps2x->Button(PSB_SQUARE)) {
+      mTank.TurnLeftRotate();
+    }
+    if (mTank.Ps2x->Button(PSB_CIRCLE)) {
+      mTank.TurnRightRotate();
+    }
+
+  } else {
+    mTank.KeepStop();
   }
+  delay(50);
 }
 
-void HandleInfaredRemote (byte Irkey)
+void HandleInfaredRemote (byte irKeyCode)
 {
-  switch (Irkey) {
+  switch ((E_EM_IR_KEYCODE) mTank.IR->getIrKey(irKeyCode, IR_TYPE_NORMAL)) {
     case IR_KEYCODE_STAR:
       mTank.sing(S_connection);
       mTank.SetRgbColor(E_RGB_ALL, mTank.GetSpeed() * 2.5);
@@ -195,7 +211,7 @@ void UltrasonicFollow()
     mTank.GoBack();
   } else if (UlFrontDistance > 14) {
     mTank.GoForward();
-  } else if (10 <= UlFrontDistance <= 4) {
+  } else if (10 <= UlFrontDistance <= 14) {
     mTank.KeepStop();
   }
 }
@@ -217,22 +233,32 @@ void loop()
       DEBUG_LOG(DEBUG_LEVEL_INFO, "E_BLUETOOTH_CONTROL \n");
       break;
     case E_INFRARED_REMOTE_CONTROL:
-      byte Irkey;
+      byte irKeyCode;
       if (mode != E_INFRARED_REMOTE_CONTROL) {
-        mTank.InitIrPin();
+        mTank.InitIr();
         mode = E_INFRARED_REMOTE_CONTROL;
       }
-      Irkey = mTank.GetIrKey();
-      if (Irkey != NULL)
+      if (irKeyCode = mTank.IR->getCode())
       {
-        HandleInfaredRemote(Irkey);
+        DEBUG_LOG(DEBUG_LEVEL_INFO, "irKeyCode = %lx \n", irKeyCode);
+        HandleInfaredRemote(irKeyCode);
         delay(110);
-      } else
-        mTank.KeepStop();
+      } else {
+        if (mTank.GetStatus() != E_STOP ) {
+          mTank.KeepStop();
+        }
+      }
+      break;
+    case E_PS2_REMOTE_CONTROL:
+      if (mode != E_PS2_REMOTE_CONTROL) {
+        mTank.InitPs2x();
+        mode = E_PS2_REMOTE_CONTROL;
+      }
+      HandlePS2();
       break;
     case E_ULTRASONIC_AVOIDANCE:
       if (mode != E_ULTRASONIC_AVOIDANCE) {
-        mTank.InitUltrasonicPin();
+        mTank.InitUltrasonic();
         mTank.SetServoDegree(1, 90);
         mode = E_ULTRASONIC_AVOIDANCE;
       }
@@ -240,7 +266,7 @@ void loop()
       break;
     case E_ULTRASONIC_FOLLOW_MODE:
       if (mode != E_ULTRASONIC_FOLLOW_MODE) {
-        mTank.InitUltrasonicPin();
+        mTank.InitUltrasonic();
         mTank.SetServoDegree(1, 90);
         mode = E_ULTRASONIC_FOLLOW_MODE;
       }
@@ -252,7 +278,7 @@ void loop()
           switch (mProtocol->GetBuzzerMode())
           {
             case E_NOTE:
-              mTank.Buzzer->mBuzzer->_tone(mProtocol->GetBuzzerNote(), 120, 2);
+              mTank.Sensors->mBuzzer->_tone(mProtocol->GetBuzzerNote(), 120, 2);
               break;
             case E_SOUND:
               mTank.sing(mProtocol->GetBuzzerSound());
@@ -262,24 +288,6 @@ void loop()
               break;
           }
         }
-      }
-      break;
-    case E_PS2_REMOTE_CONTROL:
-      if (mode != E_PS2_REMOTE_CONTROL) {
-        mTank.InitPs2xPin();
-        mode = E_PS2_REMOTE_CONTROL;
-      }
-      int Ps2xKey;
-      uint16_t Ps2xLeftAngle, Ps2xRightAngle;
-      Ps2xKey = mTank.GetPs2xKeyValue();
-      Ps2xLeftAngle = mTank.GetPs2xRockerAngle(1);
-      Ps2xRightAngle = mTank.GetPs2xRockerAngle(2);
-      if ((Ps2xKey != NULL) || (Ps2xRightAngle != 0xFFF) || (Ps2xLeftAngle != 0xFFF)) {
-        HandlePS2(Ps2xKey, Ps2xRightAngle, Ps2xLeftAngle);
-        delay(20);
-      }
-      else {
-        mTank.KeepStop();
       }
       break;
     case E_RGB_MODE:
@@ -300,10 +308,11 @@ void loop()
     case E_FORWARD:
       mTank.SetRgbColor(E_RGB_ALL, RGB_WHITE);
       break;
-    case E_LEFT:
+
+    case E_LEFT_ROTATE:
       mTank.SetRgbColor(E_RGB_LEFT, RGB_WHITE);
       break;
-    case E_RIGHT:
+    case E_RIGHT_ROTATE:
       mTank.SetRgbColor(E_RGB_RIGHT, RGB_WHITE);
       break;
     case E_BACK:
